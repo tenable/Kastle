@@ -6,11 +6,9 @@ lazy val commonTestDependencies = Seq(
   mockitoCore
 ) ++ logbackRelated
 
-lazy val tenableRepo = "" //ToDo
-
 inThisBuild(
   List(
-    organization := "com.tenable.consec.library",
+    organization := "com.tenable.katsle.library",
     scalaVersion := "2.12.10",
     crossScalaVersions := Seq("2.12.10", "2.13.1")
   )
@@ -45,23 +43,15 @@ lazy val kafkaClient = (project in file("kafka-library"))
     )
       ++ kafkaRelated
       ++ commonTestDependencies.map(_ % Test)
-      ++ commonTestDependencies.map(_ % IntegrationTest),
-    resolvers ++= Seq(
-      "Tenable Nexus (tenable-cloud)" at tenableRepo + "/content/repositories/tenable-cloud"
-    ),
-    externalResolvers := Resolver.combineDefaultResolvers(resolvers.value.toVector, false)
+      ++ commonTestDependencies.map(_ % IntegrationTest)
   )
-  .settings(
-    version := (version in ThisBuild).value,
-    publishMavenStyle := true,
-    publishArtifact in Test := false,
-    credentials += Credentials(Path.userHome / ".sbt" / "snapshot.creds"),
-    credentials += Credentials(Path.userHome / ".sbt" / "release.creds"),
-    publishTo := Some(
-      "releases" at tenableRepo + "/content/repositories/tenable-cloud-" + sys.env
-        .getOrElse("SBTRELEASE", "release")
-    )
-  )
+
+lazy val doNotPublishArtifact = Seq(
+  publishArtifact := false,
+  publishArtifact in (Compile, packageDoc) := false,
+  publishArtifact in (Compile, packageSrc) := false,
+  publishArtifact in (Compile, packageBin) := false
+)
 
 lazy val docs = project
   .in(file("kafka-lib-docs"))
@@ -87,7 +77,7 @@ lazy val site = project
       micrositeDescription := "Purely functional, effectful, resource-safe, kafka library for Scala",
       micrositeAuthor := "Tenable",
       micrositeGithubOwner := "Tenable",
-      micrositeGithubRepo := "lib-appsec-kafka",
+      micrositeGithubRepo := "lib-katsle",
       micrositeFooterText := None,
       micrositeHighlightTheme := "atom-one-light",
       micrositeCompilingDocsTool := WithMdoc,
