@@ -3,6 +3,7 @@
 target/
 .idea/
 project/target/
+project/metals.sbt
 *.sc
 lib_managed
 .gradle

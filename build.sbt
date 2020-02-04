@@ -63,14 +63,45 @@ lazy val kafkaClient = (project in file("kafka-library"))
     )
   )
 
-// lazy val docs = project
-//   .in(file("kafka-lib-docs"))
-//   .settings(
-//     mdocOut := file("kafka-lib-docs"),
-//     publishTo := None,
-//     publishArtifact := false,
-//     publish := {},
-//     publishLocal := {}
-//   )
-//   .dependsOn(kafkaClient)
-//   .enablePlugins(MdocPlugin)
+lazy val docs = project
+  .in(file("kafka-lib-docs"))
+  .settings(
+    mdocOut := file("kafka-lib-docs"),
+    publishTo := None,
+    publishArtifact := false,
+    publish := {},
+    publishLocal := {}
+  )
+  .dependsOn(kafkaClient)
+  .enablePlugins(MdocPlugin)
+
+lazy val site = project
+  .in(file("site"))
+  .enablePlugins(MicrositesPlugin)
+  .enablePlugins(MdocPlugin)
+  .settings(doNotPublishArtifact)
+  .settings {
+    import microsites._
+    Seq(
+      micrositeName := "Kastle",
+      micrositeDescription := "Purely functional, effectful, resource-safe, kafka library for Scala",
+      micrositeAuthor := "Tenable",
+      micrositeGithubOwner := "Tenable",
+      micrositeGithubRepo := "lib-appsec-kafka",
+      micrositeFooterText := None,
+      micrositeHighlightTheme := "atom-one-light",
+      micrositeCompilingDocsTool := WithMdoc,
+      fork in mdoc := true, // ?????
+      // sourceDirectory in Compile := baseDirectory.value / "src",
+      // sourceDirectory in Test := baseDirectory.value / "test",
+      mdocIn := (sourceDirectory in Compile).value / "docs",
+      micrositeExtraMdFiles := Map(
+        file("README.md") -> ExtraMdFileConfig(
+          "index.md",
+          "home",
+          Map("title" -> "Home", "section" -> "home", "position" -> "0")
+        )
+      )
+    )
+  }
+  .dependsOn(kafkaClient)
