@@ -1,0 +1,8 @@
+.metals
+.bloop
+target/
+.idea/
+project/target/
+*.sc
+lib_managed
+.gradle
