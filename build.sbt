@@ -6,11 +6,9 @@ lazy val commonTestDependencies = Seq(
   mockitoCore
 ) ++ logbackRelated
 
-lazy val tenableRepo = ""
-
 inThisBuild(
   List(
-    organization := "com.tenable.consec.library",
+    organization := "com.tenable.katsle.library",
     scalaVersion := "2.12.10",
     crossScalaVersions := Seq("2.12.10", "2.13.1")
   )
@@ -79,7 +77,7 @@ lazy val site = project
       micrositeDescription := "Purely functional, effectful, resource-safe, kafka library for Scala",
       micrositeAuthor := "Tenable",
       micrositeGithubOwner := "Tenable",
-      micrositeGithubRepo := "lib-appsec-kafka",
+      micrositeGithubRepo := "lib-katsle",
       micrositeFooterText := None,
       micrositeHighlightTheme := "atom-one-light",
       micrositeCompilingDocsTool := WithMdoc,
