@@ -8,6 +8,6 @@ Everyone is expected to follow the [Scala Code of Conduct] when discussing the p
 
 Any questions, concerns, or moderation requests please contact a maintainer of the project:
 
-- Anonymous Tenable Employee: [Website](https://tenable.com) / [GitHub](https://github.com/tenable) / [Twitter](https://twitter.com/TenableSecurity)
+- [Adam](mailto:abell@tenable.com)
 
 [Scala Code of Conduct]: https://www.scala-lang.org/conduct/
