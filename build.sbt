@@ -48,14 +48,9 @@ lazy val kafkaClient = (project in file("kafka-library"))
       ++ commonTestDependencies.map(_ % IntegrationTest)
   )
 
-// lazy val docs = project
-//   .in(file("kafka-lib-docs"))
-//   .settings(
-//     mdocOut := file("kafka-lib-docs"),
-//     publishTo := None,
-//     publishArtifact := false,
-//     publish := {},
-//     publishLocal := {}
-//   )
-//   .dependsOn(kafkaClient)
-//   .enablePlugins(MdocPlugin)
+lazy val doNotPublishArtifact = Seq(
+  publishArtifact := false,
+  publishArtifact in (Compile, packageDoc) := false,
+  publishArtifact in (Compile, packageSrc) := false,
+  publishArtifact in (Compile, packageBin) := false
+)
