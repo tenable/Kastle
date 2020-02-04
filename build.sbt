@@ -6,7 +6,7 @@ lazy val commonTestDependencies = Seq(
   mockitoCore
 ) ++ logbackRelated
 
-lazy val tenableRepo = "" //ToDo
+lazy val tenableRepo = ""
 
 inThisBuild(
   List(
@@ -45,22 +45,7 @@ lazy val kafkaClient = (project in file("kafka-library"))
     )
       ++ kafkaRelated
       ++ commonTestDependencies.map(_ % Test)
-      ++ commonTestDependencies.map(_ % IntegrationTest),
-    resolvers ++= Seq(
-      "Tenable Nexus (tenable-cloud)" at tenableRepo + "/content/repositories/tenable-cloud"
-    ),
-    externalResolvers := Resolver.combineDefaultResolvers(resolvers.value.toVector, false)
-  )
-  .settings(
-    version := (version in ThisBuild).value,
-    publishMavenStyle := true,
-    publishArtifact in Test := false,
-    credentials += Credentials(Path.userHome / ".sbt" / "snapshot.creds"),
-    credentials += Credentials(Path.userHome / ".sbt" / "release.creds"),
-    publishTo := Some(
-      "releases" at tenableRepo + "/content/repositories/tenable-cloud-" + sys.env
-        .getOrElse("SBTRELEASE", "release")
-    )
+      ++ commonTestDependencies.map(_ % IntegrationTest)
   )
 
 // lazy val docs = project
