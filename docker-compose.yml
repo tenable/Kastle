@@ -10,10 +10,10 @@ services:
   kafka:
     image: "confluentinc/cp-kafka:4.1.0"
     ports:
-      - "29092:29092"
+      - "6001:6001"
     environment:
       - KAFKA_ZOOKEEPER_CONNECT=zookeeper:32182
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:29092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:6001
       - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
 # we may need schema-registry for some sort of avro schema-related support (not sure what exactly).  Fix config
 #  schema-registry:
