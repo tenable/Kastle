@@ -7,6 +7,7 @@ import cats.instances.list._
 import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
 import cats.syntax.apply._
+import cats.syntax.either._
 import cats.syntax.functor._
 import cats.syntax.traverse._
 import com.tenable.library.kafkaclient.client.standard.{
@@ -22,21 +23,20 @@ import org.slf4j.LoggerFactory
 
 import scala.concurrent.duration._
 import scala.util.Random
-import scala.collection.JavaConverters._
-import org.apache.kafka.clients.admin.TopicDescription
+import net.manub.embeddedkafka.EmbeddedKafkaConfig
 
 object GeneralKafkaHelpers {
   lazy val defaultKeySerde   = new StringSerde()
   lazy val defaultValueSerde = new StringSerde()
 
-  private lazy val logger                 = LoggerFactory.getLogger(getClass)
-  lazy implicit val kafkaConnectionString = brokers.mkString(",")
-  lazy val brokers: Seq[String]           = Seq("127.0.0.1:29092")
-  lazy val adminConfig: KafkaAdminConfig  = KafkaAdminConfig.default(kafkaConnectionString)
+  private lazy val logger                         = LoggerFactory.getLogger(getClass)
+  def adminConfig(conn: String): KafkaAdminConfig = KafkaAdminConfig.default(conn)
 
-  def withAdmin[F[_]: Concurrent: ContextShift, A](f: KafkaAdminIO[F] => F[A]): F[A] =
+  def withAdmin[F[_]: Concurrent: ContextShift, A](
+      f: KafkaAdminIO[F] => F[A]
+  )(implicit C: EmbeddedKafkaConfig): F[A] =
     KafkaAdminIO
-      .builder[F](adminConfig)
+      .builder[F](adminConfig(s"localhost:${C.kafkaPort}"))
       .resource
       .use(f)
 
@@ -74,9 +74,9 @@ object GeneralKafkaHelpers {
       messages: Seq[(K, V)],
       keySerializer: Serializer[K],
       valueSerializer: Serializer[V]
-  ): F[Unit] = {
+  )(implicit C: EmbeddedKafkaConfig): F[Unit] = {
     val config = KafkaProducerConfig(
-      connectionString = kafkaConnectionString,
+      connectionString = s"localhost:${C.kafkaPort}",
       ackStrategy = AckStrategy.All,
       retries = 1,
       batchSize = 1,
@@ -94,9 +94,9 @@ object GeneralKafkaHelpers {
 
   def withProducer[F[_]: Concurrent: ContextShift, B](
       f: KafkaProducerIO[F, String, String] => F[B]
-  ): F[B] = {
+  )(implicit C: EmbeddedKafkaConfig): F[B] = {
     val config = KafkaProducerConfig(
-      connectionString = kafkaConnectionString,
+      connectionString = s"localhost:${C.kafkaPort}",
       ackStrategy = AckStrategy.All,
       retries = 1,
       batchSize = 1,
@@ -133,35 +133,62 @@ object GeneralKafkaHelpers {
   )(task: TopicDefinitionDetails => F[T]): F[T] =
     withTopics(Set(topic))(topics => task(topics.head)) //TODO !!!
 
+  def ensureTopicsExist[F[_]: Async: ContextShift](
+      kafkaAdminIO: KafkaAdminIO[F],
+      topicDefinitions: Set[TopicDefinitionDetails]
+  ): F[Either[String, Unit]] = {
+    val F              = Async[F]
+    val expectedTopics = topicDefinitions.map(t => t.name -> t).toMap
+
+    //attempt to recreate all topics... if they already exist, attempt will fail harmlessly (?)
+    F.delay(logger.info(s"Ensuring topics exist: ${expectedTopics.values.mkString(", ")}")) *>
+      kafkaAdminIO.createTopics(topicDefinitions).attempt.flatMap { createResult =>
+        logger.info(s"Created: $createResult")
+        kafkaAdminIO
+          .describeTopics(topicDefinitions.map(_.name))
+          .handleErrorWith { e =>
+            createResult.left.foreach { createException =>
+              //it's normal for topic creation to fail in some cases -- only show the error
+              //when all the topics we expect to exist aren't there, because this is the only case where it's likely
+              //to indicate a real problem
+              logger.warn(s"Topic creation failed with exception.", createException)
+            }
+
+            logger.error(
+              s"Unable to list topics.  This usually means topic creation failed.  Scroll up in the log.",
+              e
+            )
+            F.raiseError(
+              new Exception(
+                "Unable to list topics.  This usually means topic creation failed.  Check logs",
+                e
+              )
+            )
+          }
+          .map { actualTopics =>
+            logger.info(s"Actual: $actualTopics")
+            val missingTopics = expectedTopics.keySet.diff(actualTopics.keySet)
+            if (missingTopics.nonEmpty) {
+              s"Unable to create the following topics: $missingTopics".asLeft[Unit]
+            } else {
+              actualTopics.collect {
+                case (name, desc) if expectedTopics(name).partitions != desc.partitions().size() =>
+                  s"$name partition count does not match: ${expectedTopics(name).partitions} != ${desc.partitions().size()}"
+              } match {
+                case errors if errors.nonEmpty => errors.mkString(",").asLeft[Unit]
+                case _                         => ().asRight[String]
+              }
+            }
+          }
+      }
+  }
+
   def withTopics[F[_]: Concurrent: ContextShift, T](
       topics: Set[TopicDefinitionDetails]
   )(task: Set[TopicDefinitionDetails] => F[T]): F[T] = withAdmin { admin: KafkaAdminIO[F] =>
-    def findInvalid(input: Map[String, TopicDescription]): List[String] = {
-      input.toList.map {
-        case (t, td) => (t, td, topics.find(_.name == t))
-      }.collect {
-        case (t, _, None) =>
-          s"Missing $t, probably creation failed"
-        case (t, td, Some(src))
-            if td.partitions.size != src.partitions || td.partitions.asScala
-              .map(_.replicas.size())
-              .min != src.replicationFactor.toInt =>
-          s"Settings for $t mistmatch, expected $src"
-      }
-
-    }
     val wrappedTask =
       for {
-        ts <- admin.describeTopics(topics.map(_.name))
-        toCreate = topics.filterNot(tdd => ts.keySet(tdd.name))
-        _           <- if (toCreate.nonEmpty) admin.createTopics(toCreate) else Concurrent[F].unit
-        afterCreate <- admin.describeTopics(topics.map(_.name))
-        invalid = findInvalid(afterCreate)
-        _ <- if (invalid.nonEmpty) {
-              Concurrent[F].raiseError[Unit](
-                new Exception(s"Failed to create topics, reasons: ${invalid.mkString("\n")}")
-              )
-            } else Concurrent[F].unit
+        _      <- ensureTopicsExist(admin, topics)
         result <- task(topics)
       } yield result
 
@@ -241,9 +268,9 @@ object GeneralKafkaHelpers {
   def constructConsumerConfig(
       topics: Set[TopicDefinitionDetails],
       maxPollInterval: FiniteDuration
-  ): KafkaConsumerConfig =
+  )(implicit C: EmbeddedKafkaConfig): KafkaConsumerConfig =
     KafkaConsumerConfig(
-      connectionString = kafkaConnectionString,
+      connectionString = s"localhost:${C.kafkaPort}",
       topics = topics.map(_.name),
       groupId = s"prefix.${Random.alphanumeric.filter(_.isLetter).take(10).mkString.toLowerCase}.1",
       maxPollInterval = maxPollInterval
@@ -252,7 +279,7 @@ object GeneralKafkaHelpers {
   def constructConsumer[F[_]: ConcurrentEffect: ContextShift: Timer](
       topics: Set[TopicDefinitionDetails],
       configMutations: KafkaConsumerConfig => KafkaConsumerConfig = identity
-  ): Resource[F, KafkaConsumerIO[F, String, String]] =
+  )(implicit C: EmbeddedKafkaConfig): Resource[F, KafkaConsumerIO[F, String, String]] =
     KafkaConsumerIO
       .builder(configMutations(constructConsumerConfig(topics, 10.seconds)))
       .withKeyDeserializer(defaultKeySerde.deserializer())
@@ -261,9 +288,9 @@ object GeneralKafkaHelpers {
 
   def constructProducer[F[_]: Concurrent: ContextShift](
       partitioner: Class[_ <: Partitioner]
-  ): Resource[F, KafkaProducerIO[F, String, String]] = {
+  )(implicit C: EmbeddedKafkaConfig): Resource[F, KafkaProducerIO[F, String, String]] = {
     val config = KafkaProducerConfig(
-      connectionString = kafkaConnectionString,
+      connectionString = s"localhost:${C.kafkaPort}",
       ackStrategy = AckStrategy.All,
       retries = 1,
       batchSize = 16384,

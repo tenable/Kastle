@@ -32,7 +32,7 @@ class RebalanceListener[F[_]: ConcurrentEffect](
       s"Rebalance detected partitions revoked: ${partitions.asScala.toSet}, notifying consumer"
     )
 
-    runSync(partitionsRevokedMVar.put(PartitionsRevoked(partitions.asScala.toSet))) match {
+    runSync(partitionsRevokedMVar.tryPut(PartitionsRevoked(partitions.asScala.toSet))) match {
       case Left(_) =>
         logger.warn(
           s"Rebalance detected partitions revoked: ${partitions.asScala.toSet}, unable to notify customer"
@@ -47,7 +47,7 @@ class RebalanceListener[F[_]: ConcurrentEffect](
   @silent
   override def onPartitionsAssigned(partitions: util.Collection[TopicPartition]): Unit = {
     logger.info(s"Partitions assigned after revocation: ${partitions.asScala.toSet}")
-    runSync(partitionsRevokedMVar.take) match {
+    runSync(partitionsRevokedMVar.tryTake) match {
       case Left(_) =>
         logger.warn(
           s"Partitions assigned after revocation: ${partitions.asScala.toSet}, unable to notify customer"
