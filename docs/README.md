@@ -6,17 +6,14 @@ Temporary publishing instructions:
 Manually bump version then from sbt console:
 `+publish`
 
-The "+" is important -- it publishes the 2.11 version as well as the 2.12 version.
+The "+" is important -- it publishes the 2.12 version as well as the 2.13 version.
 
 
-### Client
-[Mdoc docs.](./client/Client.md)
+### Producer
+[Mdoc docs.](./client/Producer.md)
 
-### Config
-[Mdoc docs.](./config/Config.md)
-
-### Naming
-[Mdoc docs.](./naming/Naming.md)
+### Consumer
+[Mdoc docs.](./client/Consumer.md)
 
 ### Development
 
