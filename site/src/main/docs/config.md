@@ -12,7 +12,7 @@ available.
 
 ### KafkaConnectionString
 
-```scala mdoc
+```scala
 import com.tenable.library.kafkaclient.config.KafkaConnectionString
 import com.tenable.library.kafkaclient.config.builders.hocon.KafkaConnectionStringBuilder
 import com.typesafe.config.ConfigFactory
