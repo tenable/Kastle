@@ -194,6 +194,7 @@ object KafkaProducerIO {
       )
     }
 
+  // scalastyle:off method.length
   private def apply[F[_]: Async: ContextShift, K, V](
       producer: Producer[K, V],
       blockingEC: ExecutionContext
@@ -300,4 +301,6 @@ object KafkaProducerIO {
         ()
       }
   }
+  // scalastyle:on method.length
+
 }

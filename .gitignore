@@ -7,3 +7,4 @@ project/metals.sbt
 *.sc
 lib_managed
 .gradle
+.DS_STORE
