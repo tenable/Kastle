@@ -66,7 +66,6 @@ object KafkaConsumerIO {
   sealed trait CreatedEmpty          extends BuilderState
   sealed trait WithKeyDeserializer   extends BuilderState
   sealed trait WithValueDeserializer extends BuilderState
-  sealed trait WithExecutionContext  extends BuilderState
 
   type Initialized =
     CreatedEmpty with WithKeyDeserializer with WithValueDeserializer
@@ -75,7 +74,8 @@ object KafkaConsumerIO {
       config: KafkaConsumerConfig,
       keyDeserializer: Option[Deserializer[K]],
       valueDeserializer: Option[Deserializer[V]],
-      blockingEC: Option[Resource[F, ExecutionContext]]
+      blockingEC: Option[Resource[F, ExecutionContext]],
+      doCancelOnRebalance: Boolean
   ) {
     type OngoingBuilder[TT <: BuilderState] = Builder[TT, F, K, V]
 
@@ -86,7 +86,8 @@ object KafkaConsumerIO {
         config,
         Some(keyDeserializer),
         valueDeserializer,
-        blockingEC
+        blockingEC,
+        doCancelOnRebalance
       )
 
     def withValueDeserializer(
@@ -96,7 +97,8 @@ object KafkaConsumerIO {
         config,
         keyDeserializer,
         Some(valueDeserializer),
-        blockingEC
+        blockingEC,
+        doCancelOnRebalance
       )
 
     def withBlockingEC(blockingEC: Resource[F, ExecutionContext]): OngoingBuilder[T] =
@@ -104,8 +106,17 @@ object KafkaConsumerIO {
         config,
         keyDeserializer,
         valueDeserializer,
-        Some(blockingEC)
+        Some(blockingEC),
+        doCancelOnRebalance
       )
+
+    def cancelOnRebalance(flag: Boolean = true): OngoingBuilder[T] = new Builder[T, F, K, V](
+      config,
+      keyDeserializer,
+      valueDeserializer,
+      blockingEC,
+      flag
+    )
 
     def resource(implicit ev: Initialized =:= T): Resource[F, KafkaConsumerIO[F, K, V]] = {
       val _ = ev //shutup compiler
@@ -113,7 +124,8 @@ object KafkaConsumerIO {
         config,
         keyDeserializer.get,
         valueDeserializer.get,
-        blockingEC
+        blockingEC,
+        doCancelOnRebalance
       )
     }
   }
@@ -121,13 +133,14 @@ object KafkaConsumerIO {
   def builder[F[_]: ConcurrentEffect: ContextShift: Timer, K, V](
       config: KafkaConsumerConfig
   ): Builder[CreatedEmpty, F, K, V] =
-    new Builder[CreatedEmpty, F, K, V](config, None, None, None)
+    new Builder[CreatedEmpty, F, K, V](config, None, None, None, false)
 
   private def resource[F[_]: ConcurrentEffect: ContextShift: Timer, K, V](
       config: KafkaConsumerConfig,
       keyDeserializer: Deserializer[K],
       valueDeserializer: Deserializer[V],
-      optionalBlockingEC: Option[Resource[F, ExecutionContext]]
+      optionalBlockingEC: Option[Resource[F, ExecutionContext]],
+      cancelOnRebalance: Boolean
   ): Resource[F, KafkaConsumerIO[F, K, V]] =
     for {
       ec <- optionalBlockingEC.getOrElse(ExecutionContexts.io(s"kafka-consumer"))
@@ -136,7 +149,8 @@ object KafkaConsumerIO {
                      config,
                      keyDeserializer,
                      valueDeserializer,
-                     ec
+                     ec,
+                     cancelOnRebalance
                    )
                  )(
                    _.close()
@@ -148,7 +162,8 @@ object KafkaConsumerIO {
       config: KafkaConsumerConfig,
       keyDeserializer: Deserializer[K],
       valueDeserializer: Deserializer[V],
-      blockingEC: ExecutionContext
+      blockingEC: ExecutionContext,
+      cancelOnRebalance: Boolean
   ): F[KafkaConsumerIO[F, K, V]] = {
     implicit val logger: Logger =
       LoggerFactory.getLogger(s"kafka-io-${config.clientId}".replace('.', '-'))
@@ -161,7 +176,11 @@ object KafkaConsumerIO {
           valueDeserializer
         )
       val subscribedTopics = config.topics.asJava
-      c.subscribe(subscribedTopics, new RebalanceListener[F](config.clientId, rebalanceMVar))
+      if (cancelOnRebalance) {
+        c.subscribe(subscribedTopics, new RebalanceListener[F](config.clientId, rebalanceMVar))
+      } else {
+        c.subscribe(subscribedTopics)
+      }
       c
     }
 

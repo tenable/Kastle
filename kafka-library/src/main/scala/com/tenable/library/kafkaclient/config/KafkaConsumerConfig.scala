@@ -13,7 +13,7 @@ case class KafkaConsumerConfig(
     topics: Set[String],
     groupId: String,
     maxPollInterval: FiniteDuration,
-    maybeFakePollInterval: Option[FiniteDuration] = None,
+    keepAliveInterval: Option[FiniteDuration] = None,
     maybeMaxPollRecords: Option[Int] = None,
     customClientId: Option[String] = None,
     autoCommit: Boolean = false,
@@ -24,15 +24,7 @@ case class KafkaConsumerConfig(
 
   lazy val clientId: String = customClientId.getOrElse(s"$groupId-consumer")
 
-  val fakePollInterval: FiniteDuration = maybeFakePollInterval.getOrElse {
-    if (maxPollInterval < 2.seconds) {
-      maxPollInterval
-    } else if (maxPollInterval < 5.seconds) {
-      maxPollInterval - 2.seconds
-    } else {
-      5.seconds
-    }
-  }
+  val fakePollInterval: FiniteDuration = keepAliveInterval.getOrElse(0.millis)
 
   @silent
   def properties[K, V]: Properties = {
