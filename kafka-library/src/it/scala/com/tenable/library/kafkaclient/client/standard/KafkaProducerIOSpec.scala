@@ -7,11 +7,23 @@ import org.apache.kafka.common.PartitionInfo
 
 import scala.concurrent.ExecutionContext
 import com.tenable.library.kafkaclient.config.TopicDefinitionDetails
+import net.manub.embeddedkafka.EmbeddedKafka
+import org.scalatest.BeforeAndAfterAll
 
-class KafkaProducerIOSpec extends SyncIntegrationSpec {
+class KafkaProducerIOSpec extends SyncIntegrationSpec with EmbeddedKafka with BeforeAndAfterAll {
   import GeneralKafkaHelpers._
   implicit val CS = IO.contextShift(ExecutionContext.global)
   implicit val CE = IO.ioConcurrentEffect(CS)
+
+  override def beforeAll(): Unit = {
+    EmbeddedKafka.start()
+    ()
+  }
+
+  override def afterAll(): Unit = {
+    EmbeddedKafka.stop()
+    ()
+  }
 
   "ProducerIO" should {
     "partitionsFor" when {

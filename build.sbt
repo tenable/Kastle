@@ -42,8 +42,9 @@ lazy val kafkaClient = (project in file("kafka-library"))
       jacksonDatabind
     )
       ++ kafkaRelated
-      ++ commonTestDependencies.map(_ % Test)
-      ++ commonTestDependencies.map(_ % IntegrationTest)
+      ++ commonTestDependencies.map(_  % Test)
+      ++ commonTestDependencies.map(_  % IntegrationTest)
+      ++ Seq("io.github.embeddedkafka" %% "embedded-kafka" % "2.4.0" % IntegrationTest)
   )
 
 lazy val doNotPublishArtifact = Seq(

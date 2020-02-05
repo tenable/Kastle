@@ -26,6 +26,8 @@ import scala.collection.JavaConverters._
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.global
 import com.tenable.library.kafkaclient.config.TopicDefinitionDetails
+import net.manub.embeddedkafka.EmbeddedKafka
+import org.scalatest.BeforeAndAfterAll
 
 class TestPartitioner2Partitions extends Partitioner {
   override def partition(
@@ -42,12 +44,22 @@ class TestPartitioner2Partitions extends Partitioner {
   override def configure(configs: util.Map[String, _]): Unit = ()
 }
 
-class KafkaConsumerSpec extends AsyncIntegrationSpec {
+class KafkaConsumerSpec extends AsyncIntegrationSpec with EmbeddedKafka with BeforeAndAfterAll {
   override implicit val patienceConfig: PatienceConfig =
     PatienceConfig(timeout = 20.seconds, interval = 500.millis)
   implicit val timer = IO.timer(global)
   implicit val CS    = IO.contextShift(global)
   implicit val CE    = IO.ioConcurrentEffect(CS)
+
+  override def beforeAll(): Unit = {
+    EmbeddedKafka.start()
+    ()
+  }
+
+  override def afterAll(): Unit = {
+    EmbeddedKafka.stop()
+    ()
+  }
 
   val configInBatchesOf5: KafkaConsumerConfig => KafkaConsumerConfig = (cfg: KafkaConsumerConfig) =>
     cfg.copy(maybeMaxPollRecords = Some(5))

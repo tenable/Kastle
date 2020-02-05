@@ -7,11 +7,23 @@ import com.tenable.library.kafkaclient.testhelpers.{GeneralKafkaHelpers, SyncInt
 import scala.util.Random
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.DurationInt
+import net.manub.embeddedkafka.EmbeddedKafka
+import org.scalatest.BeforeAndAfterAll
 
-class KafkaAdminIOSpec extends SyncIntegrationSpec {
+class KafkaAdminIOSpec extends SyncIntegrationSpec with EmbeddedKafka with BeforeAndAfterAll {
   import GeneralKafkaHelpers._
   implicit val timer = IO.timer(ExecutionContext.global)
   implicit val CS    = IO.contextShift(ExecutionContext.global)
+
+  override def beforeAll(): Unit = {
+    EmbeddedKafka.start()
+    ()
+  }
+
+  override def afterAll(): Unit = {
+    EmbeddedKafka.stop()
+    ()
+  }
 
   "KafkaAdminIO" should {
     "create, delete, list topics" when {
