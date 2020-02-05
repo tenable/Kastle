@@ -1,6 +1,8 @@
 # Kastle - Kafka Client
+![LOGO](https://gist.githubusercontent.com/agbell/fd695c9370511e39304a091eb9f6b3f2/raw/e9f0fd22166e036b768ef76d0920c6ac97b4f921/KASTLE.png)
 
-[![Build status](https://github.com/tenable/kastle/workflows/build/badge.svg?branch=master)](https://github.com/tenable/kastle/actions?query=branch%3Amaster+workflow%3Abuild) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.tenable/kastle_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.tenable/kastle_2.13)
+[![CircleCI](https://circleci.com/gh/tenable/Kastle.svg?style=svg)](https://circleci.com/gh/tenable/Kastle)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.tenable/kastle_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.tenable/kastle_2.13)
 
 A purely functional, effectful, resource-safe, kafka library for Scala
 
