@@ -118,6 +118,7 @@ object KafkaAdminIO {
     }
 
   @silent
+  // scalastyle:off method.length
   private def apply[F[_]: Async: ContextShift](
       admin: AdminClient,
       blockingEC: ExecutionContext,
@@ -193,12 +194,12 @@ object KafkaAdminIO {
 
       override def renewDelegationToken(hmac: Array[Byte]): F[Long] =
         CS.evalOn(blockingEC) {
-          F.delay(admin.renewDelegationToken(hmac).expiryTimestamp.get).map(_.asInstanceOf[Long])
+          F.delay(admin.renewDelegationToken(hmac).expiryTimestamp.get)
         }
 
       override def expireDelegationToken(hmac: Array[Byte]): F[Long] =
         CS.evalOn(blockingEC) {
-          F.delay(admin.expireDelegationToken(hmac).expiryTimestamp.get).map(_.asInstanceOf[Long])
+          F.delay(admin.expireDelegationToken(hmac).expiryTimestamp.get)
         }
 
       override def describeDelegationToken(): F[List[DelegationToken]] =

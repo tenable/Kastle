@@ -25,9 +25,13 @@ case class KafkaConsumerConfig(
   lazy val clientId: String = customClientId.getOrElse(s"$groupId-consumer")
 
   val fakePollInterval: FiniteDuration = maybeFakePollInterval.getOrElse {
-    if (maxPollInterval < 2.seconds) maxPollInterval
-    else if (maxPollInterval < 5.seconds) maxPollInterval - 2.seconds
-    else 5.seconds
+    if (maxPollInterval < 2.seconds) {
+      maxPollInterval
+    } else if (maxPollInterval < 5.seconds) {
+      maxPollInterval - 2.seconds
+    } else {
+      5.seconds
+    }
   }
 
   @silent
