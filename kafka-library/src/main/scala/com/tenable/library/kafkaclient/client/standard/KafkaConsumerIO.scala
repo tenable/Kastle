@@ -182,6 +182,7 @@ object KafkaConsumerIO {
   }
 
   @silent
+  // scalastyle:off method.length
   private def apply[F[_]: ConcurrentEffect: Timer, K, V](
       stateHandler: ConsumerStateHandler[F, K, V]
   )(implicit logger: Logger): KafkaConsumerIO[F, K, V] = new KafkaConsumerIO[F, K, V] {
@@ -274,10 +275,11 @@ object KafkaConsumerIO {
       stateHandler.withConsumer("batch-commit-async") { state =>
         F.delay {
           state.consumer
-            .commitAsync(offsets.mapValues(o => new OffsetAndMetadata(o)).toMap.asJava, null)
+            .commitAsync(offsets.mapValues(o => new OffsetAndMetadata(o)).toMap.asJava, null) // scalastyle:off null
           (state, ())
         }
       }
+    // scalastyle:on null
 
     override def listTopics(): F[Map[String, List[PartitionInfo]]] =
       stateHandler.withConsumer("list-topics", Some(s"Listing all topics")) { state =>
@@ -398,4 +400,5 @@ object KafkaConsumerIO {
     private def emptyConsumerRecords: ConsumerRecords[K, V] =
       new ConsumerRecords(new util.HashMap[TopicPartition, util.List[ConsumerRecord[K, V]]]())
   }
+  // scalastyle:on method.length
 }
