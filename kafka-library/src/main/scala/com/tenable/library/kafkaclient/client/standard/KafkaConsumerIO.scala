@@ -200,9 +200,8 @@ object KafkaConsumerIO {
             F.pure((state, emptyConsumerRecords))
           } else {
             F.delay {
-              val polled = state.consumer.poll(timeout.asJavaDuration)
-              logger.info(s"Polling ${polled.count()}")
-              (state, polled)
+              logger.debug(s"Polling")
+              (state, state.consumer.poll(timeout.asJavaDuration))
             }
           }
         }
