@@ -1,5 +1,5 @@
 # Kastle - Kafka Client
-![LOGO](https://raw.githubusercontent.com/tenable/Kastle/logo/docs/KASTLE.png | width=100)
+<img src="https://raw.githubusercontent.com/tenable/Kastle/logo/docs/KASTLE.png" alt="Kastle" width="200" height="200">
 
 [![CircleCI](https://circleci.com/gh/tenable/Kastle.svg?style=svg)](https://circleci.com/gh/tenable/Kastle)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.tenable/kastle_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.tenable/kastle_2.13)
