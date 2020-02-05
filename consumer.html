@@ -1,0 +1,157 @@
+<html><head><title>Kastle: Consumer</title><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="Tenable" /><meta name="description" content="Purely functional, effectful, resource-safe, kafka library for Scala" /><meta name="og:image" content="/img/poster.png" /><meta name="image" property="og:image" content="/img/poster.png" /><meta name="og:title" content="Kastle: Consumer" /><meta name="title" property="og:title" content="Kastle: Consumer" /><meta name="og:site_name" content="Kastle" /><meta name="og:url" content="" /><meta name="og:type" content="website" /><meta name="og:description" content="Purely functional, effectful, resource-safe, kafka library for Scala" /><link rel="icon" type="image/png" href="/img/favicon.png" /><meta name="twitter:title" content="Kastle: Consumer" /><meta name="twitter:image" content="/img/poster.png" /><meta name="twitter:description" content="Purely functional, effectful, resource-safe, kafka library for Scala" /><meta name="twitter:card" content="summary_large_image" /><link rel="icon" type="image/png" sizes="16x16" href="/img/favicon16x16.png" /><link rel="icon" type="image/png" sizes="24x24" href="/img/favicon24x24.png" /><link rel="icon" type="image/png" sizes="32x32" href="/img/favicon32x32.png" /><link rel="icon" type="image/png" sizes="48x48" href="/img/favicon48x48.png" /><link rel="icon" type="image/png" sizes="57x57" href="/img/favicon57x57.png" /><link rel="icon" type="image/png" sizes="60x60" href="/img/favicon60x60.png" /><link rel="icon" type="image/png" sizes="64x64" href="/img/favicon64x64.png" /><link rel="icon" type="image/png" sizes="70x70" href="/img/favicon70x70.png" /><link rel="icon" type="image/png" sizes="72x72" href="/img/favicon72x72.png" /><link rel="icon" type="image/png" sizes="76x76" href="/img/favicon76x76.png" /><link rel="icon" type="image/png" sizes="96x96" href="/img/favicon96x96.png" /><link rel="icon" type="image/png" sizes="114x114" href="/img/favicon114x114.png" /><link rel="icon" type="image/png" sizes="120x120" href="/img/favicon120x120.png" /><link rel="icon" type="image/png" sizes="128x128" href="/img/favicon128x128.png" /><link rel="icon" type="image/png" sizes="144x144" href="/img/favicon144x144.png" /><link rel="icon" type="image/png" sizes="150x150" href="/img/favicon150x150.png" /><link rel="icon" type="image/png" sizes="152x152" href="/img/favicon152x152.png" /><link rel="icon" type="image/png" sizes="196x196" href="/img/favicon196x196.png" /><link rel="icon" type="image/png" sizes="310x310" href="/img/favicon310x310.png" /><link rel="icon" type="image/png" sizes="310x150" href="/img/favicon310x150.png" /><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/highlight/styles/atom-one-light.css" /><link rel="stylesheet" href="/css/light-style.css" /></head><body class="page"><nav id="navigation" aria-labelledby="main-navigation"><div class="navbar-wrapper container"><div class="navigation-brand"><a href="/" class="brand background-mask"><div class="page-icon-wrapper"></div><span class="brand-title">Kastle</span></a></div><div class="navigation-menu"><ul><li><a href="https://github.com/tenable/Kastle" target="_blank" rel="noopener noreferrer"><i class="nav-item-icon fa fa-lg fa-github" hidden="true"></i><span class="nav-item-text">GitHub</span></a></li></ul></div></div></nav><nav class="menu-container" aria-labelledby="section-navigation"><div id="horizontal-menu"><ul class="horizontal-nav"><li><a class="" href="/extra_md/">Home</a></li><li><a class="" href="/config.html">Configuration</a></li><li><a class=" active " href="/consumer.html">Consumer</a></li><li><a class="" href="/producer.html">Producer</a></li></ul></div></nav><main id="site-main" class="page-site-main"><section class="use"><div class="container"><div id="content"><h1 id="kafkaconsumerio">KafkaConsumerIO</h1>
+
+<h3 id="instantiating-a-kafka-consumer">Instantiating a kafka consumer</h3>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">cats.effect.IO</span>
+<span class="k">import</span> <span class="nn">scala.concurrent.ExecutionContext.global</span>
+<span class="k">import</span> <span class="nn">com.tenable.library.kafkaclient.config.KafkaConsumerConfig</span>
+<span class="k">import</span> <span class="nn">com.tenable.library.kafkaclient.client.standard.consumer.actions.ProcessAction</span>
+<span class="k">import</span> <span class="nn">com.tenable.library.kafkaclient.client.standard.KafkaConsumerIO</span>
+<span class="k">import</span> <span class="nn">scala.concurrent.duration._</span>
+<span class="k">import</span> <span class="nn">org.apache.kafka.common.serialization.StringDeserializer</span>
+
+<span class="k">implicit</span> <span class="k">val</span> <span class="n">T</span> <span class="k">=</span> <span class="nc">IO</span><span class="o">.</span><span class="n">timer</span><span class="o">(</span><span class="n">global</span><span class="o">)</span>
+<span class="k">implicit</span> <span class="k">val</span> <span class="nc">CS</span> <span class="k">=</span> <span class="nc">IO</span><span class="o">.</span><span class="n">contextShift</span><span class="o">(</span><span class="n">global</span><span class="o">)</span>
+<span class="k">implicit</span> <span class="k">val</span> <span class="nc">CE</span> <span class="k">=</span> <span class="nc">IO</span><span class="o">.</span><span class="n">ioConcurrentEffect</span><span class="o">(</span><span class="nc">CS</span><span class="o">)</span>
+
+<span class="k">val</span> <span class="n">kafkaConnectionString</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="s">"127.0.0.1:9"</span>
+<span class="k">val</span> <span class="n">topics</span> <span class="k">=</span> <span class="nc">Set</span><span class="o">(</span><span class="s">"prefix.priv.service.thetopic.1"</span><span class="o">)</span>
+<span class="k">val</span> <span class="n">consumerGroup</span> <span class="k">=</span> <span class="s">"prefix.group.1"</span>
+
+<span class="k">val</span> <span class="n">config</span> <span class="k">=</span> <span class="nc">KafkaConsumerConfig</span><span class="o">(</span><span class="n">kafkaConnectionString</span><span class="o">,</span> <span class="n">topics</span><span class="o">,</span> <span class="n">consumerGroup</span><span class="o">,</span> <span class="mf">10.</span><span class="n">seconds</span><span class="o">)</span>
+
+<span class="k">val</span> <span class="n">consumerResource</span> <span class="k">=</span> <span class="nc">KafkaConsumerIO</span>
+  <span class="o">.</span><span class="n">builder</span><span class="o">[</span><span class="kt">IO</span>, <span class="kt">String</span>, <span class="kt">String</span><span class="o">](</span><span class="n">config</span><span class="o">)</span>
+  <span class="o">.</span><span class="n">withKeyDeserializer</span><span class="o">(</span><span class="k">new</span> <span class="nc">StringDeserializer</span><span class="o">)</span>
+  <span class="o">.</span><span class="n">withValueDeserializer</span><span class="o">(</span><span class="k">new</span> <span class="nc">StringDeserializer</span><span class="o">)</span>
+  <span class="o">.</span><span class="n">resource</span>
+
+<span class="n">consumerResource</span><span class="o">.</span><span class="n">use</span> <span class="o">{</span> <span class="n">consumer</span> <span class="k">=&gt;</span>
+    <span class="c1">//Use the consumer with all the methods provided
+</span>    <span class="c1">//consumer.poll()
+</span>    <span class="c1">//consumer.pause()
+</span>    <span class="c1">//consumer.commit(...)
+</span>    <span class="o">???</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="setting-up-kafka-consumers-to-poll-forever">Setting up kafka consumers to poll forever</h3>
+
+<p>KafkaRunLoop.Builder, offers several customizations available:</p>
+<ul>
+  <li><code class="highlighter-rouge">consuming</code>: To specify how the polled batch is to be consumed</li>
+  <li><code class="highlighter-rouge">consumingSingleEvents</code>: Handy shortcut to consume event by event</li>
+  <li><code class="highlighter-rouge">consumingTopicPartitionBatch</code>: Handy shortcut to consume all the events for a Topic Partition in one go</li>
+  <li>
+    <p><code class="highlighter-rouge">consumingFullBatch</code>: Handy shortcut to consume a full polled batch</p>
+  </li>
+  <li><code class="highlighter-rouge">expecting</code>: To specify what the result type of the processing action would be</li>
+  <li><code class="highlighter-rouge">expectingEither</code>: Handy shortcut. This will allow you to have your processing function to return Either[E, Unit], if Right it will commit, if left it will reject.</li>
+  <li><code class="highlighter-rouge">expectingTry</code>: Handy shortcut. This will allow you to have your processing function to return Try[Unit]</li>
+  <li>
+    <p><code class="highlighter-rouge">expectingProcessAction</code>: Handy shortcut. This will allow you to have your processing function to return ProcessAction. Which is the most flexible included return type</p>
+  </li>
+  <li><code class="highlighter-rouge">withRebalanceDetector</code>: If set and a rebalance occurs while your <em>cancelable</em> processing function runs, it will cancel it. Might be handy for long running processing functions.</li>
+</ul>
+
+<p>At least a <code class="highlighter-rouge">consumingXXX</code> and a <code class="highlighter-rouge">expectingXXX</code> functions must be called before calling the function run.</p>
+
+<p>Example:</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">consumerResource</span><span class="o">.</span><span class="n">use</span> <span class="o">{</span> <span class="n">consumer</span> <span class="k">=&gt;</span>
+  <span class="n">consumer</span>
+    <span class="o">.</span><span class="n">pollForever</span>
+    <span class="o">.</span><span class="n">consumingSingleEvents</span>
+    <span class="o">.</span><span class="n">expectingProcessAction</span>
+    <span class="o">.</span><span class="n">run</span><span class="o">(</span><span class="mf">1.</span><span class="n">second</span><span class="o">)</span> <span class="o">{</span> <span class="n">record</span> <span class="k">=&gt;</span>
+        <span class="nc">IO</span><span class="o">.</span><span class="n">delay</span><span class="o">(</span><span class="n">println</span><span class="o">(</span><span class="n">record</span><span class="o">.</span><span class="n">value</span><span class="o">)).</span><span class="n">map</span><span class="o">(</span><span class="k">_</span> <span class="k">=&gt;</span> <span class="nc">ProcessAction</span><span class="o">.</span><span class="n">commitAll</span><span class="o">)</span>
+    <span class="o">}</span> <span class="c1">//This returns a CancelToken, in case you wish to cancel
+</span><span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="customizing-the-action-of-the-consumer-loop">Customizing the Action of the consumer loop</h2>
+
+<p>There is no need to explicitly call <code class="highlighter-rouge">ProcessAction.commitAll</code>, you can define your own custom reactions depending on the processing returned value or use one of the predefined handlers for the most common responses.</p>
+
+<p>Below is a full example using different <code class="highlighter-rouge">EventActionable</code>s:</p>
+
+<h3 id="either-response">Either response</h3>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.tenable.library.kafkaclient.client.standard.consumer.EventActionable</span>
+
+<span class="c1">// Committing based on either
+</span><span class="k">import</span> <span class="nn">cats.instances.string._</span>
+<span class="n">consumerResource</span><span class="o">.</span><span class="n">use</span> <span class="o">{</span> <span class="n">consumer</span> <span class="k">=&gt;</span>
+  <span class="n">consumer</span>
+    <span class="o">.</span><span class="n">pollForever</span>
+    <span class="o">.</span><span class="n">consumingSingleEvents</span>
+    <span class="o">.</span><span class="n">expectingEither</span><span class="o">[</span><span class="kt">String</span><span class="o">]</span>
+    <span class="o">.</span><span class="n">run</span><span class="o">(</span><span class="mf">1.</span><span class="n">second</span><span class="o">)</span> <span class="o">{</span> <span class="n">record</span> <span class="k">=&gt;</span>
+        <span class="nc">IO</span><span class="o">.</span><span class="n">delay</span><span class="o">(</span><span class="n">println</span><span class="o">(</span><span class="n">record</span><span class="o">.</span><span class="n">value</span><span class="o">)).</span><span class="n">map</span><span class="o">(</span><span class="k">_</span> <span class="k">=&gt;</span> <span class="nc">Right</span><span class="o">(()))</span> <span class="c1">//To force commit. Use left to reject.
+</span>    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="try-response">Try response</h3>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Committing based on try
+</span><span class="k">implicit</span> <span class="k">val</span> <span class="n">showThrowable</span> <span class="k">=</span> <span class="n">cats</span><span class="o">.</span><span class="nc">Show</span><span class="o">.</span><span class="n">fromToString</span><span class="o">[</span><span class="kt">Throwable</span><span class="o">]</span>
+<span class="n">consumerResource</span><span class="o">.</span><span class="n">use</span> <span class="o">{</span> <span class="n">consumer</span> <span class="k">=&gt;</span>
+  <span class="n">consumer</span>
+    <span class="o">.</span><span class="n">pollForever</span>
+    <span class="o">.</span><span class="n">consumingSingleEvents</span>
+    <span class="o">.</span><span class="n">expectingTry</span>
+    <span class="o">.</span><span class="n">run</span><span class="o">(</span><span class="mf">1.</span><span class="n">second</span><span class="o">)</span> <span class="o">{</span> <span class="n">record</span> <span class="k">=&gt;</span>
+        <span class="nc">IO</span><span class="o">.</span><span class="n">delay</span><span class="o">(</span><span class="n">println</span><span class="o">(</span><span class="n">record</span><span class="o">.</span><span class="n">value</span><span class="o">)).</span><span class="n">map</span><span class="o">(</span><span class="k">_</span> <span class="k">=&gt;</span> <span class="n">scala</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="nc">Try</span><span class="o">(()))</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="any-gr-for-which-g-applicativeerror_-e-foldable-and-e-show">Any <code class="highlighter-rouge">G[R]</code> for which <code class="highlighter-rouge">G: ApplicativeError[?[_], E]: Foldable</code> and <code class="highlighter-rouge">E: Show</code></h3>
+
+<p>Either and Try are implemented using this approach.
+See <code class="highlighter-rouge">EventActionable.scala</code> for details</p>
+
+<h3 id="custom-defined-handler">Custom defined handler</h3>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Committing based on result
+</span><span class="k">implicit</span> <span class="k">val</span> <span class="n">eventActionableFromResult</span> <span class="k">=</span> <span class="nc">EventActionable</span><span class="o">.</span><span class="n">deriveFromResult</span><span class="o">[</span><span class="kt">Option</span><span class="o">[</span><span class="kt">String</span><span class="o">]]</span> <span class="o">{</span>
+  <span class="k">case</span> <span class="nc">Some</span><span class="o">(</span><span class="n">thing</span><span class="o">)</span> <span class="k">if</span> <span class="n">thing</span> <span class="o">==</span> <span class="s">"do-commit"</span> <span class="k">=&gt;</span> <span class="nc">ProcessAction</span><span class="o">.</span><span class="n">commitAll</span>
+  <span class="k">case</span> <span class="nc">Some</span><span class="o">(</span><span class="n">other</span><span class="o">)</span>                         <span class="k">=&gt;</span> <span class="nc">ProcessAction</span><span class="o">.</span><span class="n">rejectAll</span><span class="o">(</span><span class="n">other</span><span class="o">)</span>
+  <span class="k">case</span> <span class="nc">None</span>                                <span class="k">=&gt;</span> <span class="nc">ProcessAction</span><span class="o">.</span><span class="n">rejectAll</span><span class="o">(</span><span class="s">"nope"</span><span class="o">)</span>
+<span class="o">}</span>
+<span class="n">consumerResource</span><span class="o">.</span><span class="n">use</span> <span class="o">{</span> <span class="n">consumer</span> <span class="k">=&gt;</span>
+  <span class="n">consumer</span><span class="o">.</span><span class="n">pollForever</span><span class="o">.</span><span class="n">consumingSingleEvents</span><span class="o">.</span><span class="n">expecting</span><span class="o">[</span><span class="kt">Option</span><span class="o">[</span><span class="kt">String</span><span class="o">]].</span><span class="n">run</span><span class="o">(</span><span class="mf">1.</span><span class="n">second</span><span class="o">)</span> <span class="o">{</span> <span class="n">record</span> <span class="k">=&gt;</span>
+    <span class="nc">IO</span><span class="o">.</span><span class="n">delay</span><span class="o">(</span><span class="n">println</span><span class="o">(</span><span class="n">record</span><span class="o">.</span><span class="n">value</span><span class="o">)).</span><span class="n">map</span><span class="o">(</span><span class="k">_</span> <span class="k">=&gt;</span> <span class="nc">Some</span><span class="o">(</span><span class="s">"commit this"</span><span class="o">))</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="the-most-flexible-processaction">The most flexible: ProcessAction</h3>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Committing based on returned process action
+</span><span class="n">consumerResource</span><span class="o">.</span><span class="n">use</span> <span class="o">{</span> <span class="n">consumer</span> <span class="k">=&gt;</span>
+  <span class="n">consumer</span>
+    <span class="o">.</span><span class="n">pollForever</span>
+    <span class="o">.</span><span class="n">consumingSingleEvents</span>
+    <span class="o">.</span><span class="n">expectingProcessAction</span>
+    <span class="o">.</span><span class="n">run</span><span class="o">(</span><span class="mf">1.</span><span class="n">second</span><span class="o">)</span> <span class="o">{</span> <span class="n">record</span> <span class="k">=&gt;</span>
+        <span class="nc">IO</span><span class="o">.</span><span class="n">delay</span><span class="o">(</span><span class="n">println</span><span class="o">(</span><span class="n">record</span><span class="o">.</span><span class="n">value</span><span class="o">)).</span><span class="n">map</span><span class="o">(</span><span class="k">_</span> <span class="k">=&gt;</span> <span class="nc">ProcessAction</span><span class="o">.</span><span class="n">commitAll</span><span class="o">)</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+</div></div></section></main><footer id="site-footer"><div class="container"><div class="row"><p>Kastle is designed and developed by <a href="" target="_blank" rel="noopener noreferrer">Tenable</a></p></div><div class="row"><div>Copyright Tenable, Inc 2020</div></div></div></footer><script src="/highlight/highlight.pack.js"></script><script>
+// For all code blocks, copy the language from the containing div
+// to the inner code tag (where hljs expects it to be)
+const langPrefix = 'language-';
+document.querySelectorAll(`div[class^='${langPrefix}']`).forEach(function(div) {
+  div.classList.forEach(function(cssClass) {
+    if (cssClass.startsWith(langPrefix)) {
+      const lang = cssClass.substring(langPrefix.length);
+      div.querySelectorAll('pre code').forEach(function(code) {
+        code.classList.add(lang);
+      });
+    }
+  });
+});
+
+hljs.configure({languages:['scala','java','bash']});
+hljs.initHighlightingOnLoad();
+      </script><script>console.info('\x57\x65\x62\x73\x69\x74\x65\x20\x62\x75\x69\x6c\x74\x20\x77\x69\x74\x68\x3a\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x5f\x5f\x20\x20\x20\x20\x5f\x5f\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x5f\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x5f\x20\x5f\x5f\x0a\x20\x20\x20\x5f\x5f\x5f\x5f\x5f\x2f\x20\x2f\x5f\x20\x20\x2f\x20\x2f\x5f\x20\x20\x20\x20\x20\x20\x5f\x5f\x5f\x5f\x20\x5f\x5f\x5f\x20\x20\x28\x5f\x29\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x20\x20\x5f\x5f\x5f\x5f\x5f\x28\x5f\x29\x20\x2f\x5f\x5f\x5f\x5f\x20\x20\x5f\x5f\x5f\x5f\x5f\x0a\x20\x20\x2f\x20\x5f\x5f\x5f\x2f\x20\x5f\x5f\x20\x5c\x2f\x20\x5f\x5f\x2f\x5f\x5f\x5f\x5f\x5f\x2f\x20\x5f\x5f\x20\x60\x5f\x5f\x20\x5c\x2f\x20\x2f\x20\x5f\x5f\x5f\x2f\x20\x5f\x5f\x5f\x2f\x20\x5f\x5f\x20\x5c\x2f\x20\x5f\x5f\x5f\x2f\x20\x2f\x20\x5f\x5f\x2f\x20\x5f\x20\x5c\x2f\x20\x5f\x5f\x5f\x2f\x0a\x20\x28\x5f\x5f\x20\x20\x29\x20\x2f\x5f\x2f\x20\x2f\x20\x2f\x5f\x2f\x5f\x5f\x5f\x5f\x5f\x2f\x20\x2f\x20\x2f\x20\x2f\x20\x2f\x20\x2f\x20\x2f\x20\x2f\x5f\x5f\x2f\x20\x2f\x20\x20\x2f\x20\x2f\x5f\x2f\x20\x28\x5f\x5f\x20\x20\x29\x20\x2f\x20\x2f\x5f\x2f\x20\x20\x5f\x5f\x28\x5f\x5f\x20\x20\x29\x0a\x2f\x5f\x5f\x5f\x5f\x2f\x5f\x2e\x5f\x5f\x5f\x2f\x5c\x5f\x5f\x2f\x20\x20\x20\x20\x20\x2f\x5f\x2f\x20\x2f\x5f\x2f\x20\x2f\x5f\x2f\x5f\x2f\x5c\x5f\x5f\x5f\x2f\x5f\x2f\x20\x20\x20\x5c\x5f\x5f\x5f\x5f\x2f\x5f\x5f\x5f\x5f\x2f\x5f\x2f\x5c\x5f\x5f\x2f\x5c\x5f\x5f\x5f\x2f\x5f\x5f\x5f\x5f\x2f\x0a\x0a\x68\x74\x74\x70\x73\x3a\x2f\x2f\x34\x37\x64\x65\x67\x2e\x67\x69\x74\x68\x75\x62\x2e\x69\x6f\x2f\x73\x62\x74\x2d\x6d\x69\x63\x72\x6f\x73\x69\x74\x65\x73')</script><script>((window.gitter = {}).chat = {}).options = {
+room: 'tenable/Kastle'};</script><script src="https://sidecar.gitter.im/dist/sidecar.v1.js"></script><script src="/js/version-selector.js"></script></body></html>
