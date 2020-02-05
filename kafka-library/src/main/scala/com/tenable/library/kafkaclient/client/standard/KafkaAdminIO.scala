@@ -264,6 +264,7 @@ object KafkaAdminIO {
           F.delay(admin.close(java.time.Duration.ofNanos(timeout.toNanos)))
         }
     }
+  // scalastyle:on method.length
 }
 
 // TODO we need to move this to commons. Shouldn't be exposed here

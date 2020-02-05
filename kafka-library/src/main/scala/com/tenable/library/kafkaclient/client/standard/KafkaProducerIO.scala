@@ -301,4 +301,6 @@ object KafkaProducerIO {
         ()
       }
   }
+  // scalastyle:on method.length
+
 }

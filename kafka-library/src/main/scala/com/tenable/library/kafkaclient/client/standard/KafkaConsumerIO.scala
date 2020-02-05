@@ -279,6 +279,7 @@ object KafkaConsumerIO {
           (state, ())
         }
       }
+    // scalastyle:on null
 
     override def listTopics(): F[Map[String, List[PartitionInfo]]] =
       stateHandler.withConsumer("list-topics", Some(s"Listing all topics")) { state =>
@@ -399,4 +400,5 @@ object KafkaConsumerIO {
     private def emptyConsumerRecords: ConsumerRecords[K, V] =
       new ConsumerRecords(new util.HashMap[TopicPartition, util.List[ConsumerRecord[K, V]]]())
   }
+  // scalastyle:on method.length
 }
