@@ -14,6 +14,7 @@ object ExecutionContexts {
   private val defaultUncaughtExceptionHandler: (Thread, Throwable) => Unit = { (t, e) =>
     t.getUncaughtExceptionHandler match {
       case other => other.uncaughtException(t, e)
+      case _  => e.printStackTrace()
     }
   }
 
