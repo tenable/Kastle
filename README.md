@@ -1,4 +1,4 @@
-<img src="https://raw.githubusercontent.com/tenable/Kastle/logo/docs/KASTLE.png" alt="Kastle" width="200" height="200">
+<img src="https://raw.githubusercontent.com/tenable/Kastle/master/docs/KASTLE.png" alt="Kastle" width="200" height="200">
 
 ### Kastle - Kafka Client
 
