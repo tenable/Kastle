@@ -1,4 +1,6 @@
+<p align="center">
 <img src="https://raw.githubusercontent.com/tenable/Kastle/master/docs/KASTLE.png" alt="Kastle" width="200" height="200">
+</p>
 
 ### Kastle - Kafka Client
 
