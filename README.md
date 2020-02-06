@@ -20,15 +20,8 @@ libraryDependencies += "com.tenable" %% "kastle" % "1.1.x"
 
 ## Getting started
 
-- [Configuration](site/config.md)
-- [Consumers](site/consumers.md)
-- [Producers](site/producers.md)
-
-**Example Consumer**
-
-To get started to consume or produce to a kafka topic you will first have to (Configure a Consumer or Producer)[https://github.io/tenable/kastle/config.html].
-
-Further detail can be found in the [Documentation](https://github.io/tenable/kastle/index.html).
+- [Consumer examples](site/consumers.md)
+- [Producer examples](site/producers.md)
 
 ## Contributing
 
