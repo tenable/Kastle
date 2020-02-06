@@ -40,7 +40,7 @@ Feel free to open an issue if you notice a bug, have an idea for a feature, or h
 
 ## License
 
-All code in this repository is licensed under the Apache License, Version 2.0. See [LICENCE.txt](./LICENSE.txt).
+All code in this repository is licensed under the Apache License, Version 2.0. See [LICENCE.md](./LICENSE.md).
 
 Generated Mdoc documentation:
 
