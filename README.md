@@ -1,4 +1,6 @@
-<img src="https://raw.githubusercontent.com/tenable/Kastle/master/docs/KASTLE.png" alt="Kastle" width="200" height="200">
+<p align="center">
+<img src="https://raw.githubusercontent.com/tenable/Kastle/master/site/main/docs/KASTLE.png" alt="Kastle" width="200" height="200">
+</p>
 
 ### Kastle - Kafka Client
 
@@ -20,15 +22,8 @@ libraryDependencies += "com.tenable.library" %% "Kastle" % "1.1.x"
 
 ## Getting started
 
-- [Configuration](site/config.md)
-- [Consumers](site/consumers.md)
-- [Producers](site/producers.md)
-
-**Example Consumer**
-
-To get started to consume or produce to a kafka topic you will first have to (Configure a Consumer or Producer)[https://github.io/tenable/kastle/config.html].
-
-Further detail can be found in the [Documentation](https://tenable.github.io/Kastle).
+- [Consumer examples](site/consumers.md)
+- [Producer examples](site/producers.md)
 
 ## Contributing
 
@@ -78,7 +73,7 @@ Alternatively run using the checked bash script, which will start up the require
 
 ## License
 
-All code in this repository is licensed under the Apache License, Version 2.0. See [LICENCE.txt](./LICENSE.txt).
+All code in this repository is licensed under the Apache License, Version 2.0. See [LICENCE.md](./LICENSE.md).
 
 Generated Mdoc documentation:
 
