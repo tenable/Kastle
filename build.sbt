@@ -47,18 +47,6 @@ lazy val kafkaClient = (project in file("kafka-library"))
       ++ Seq("io.github.embeddedkafka" %% "embedded-kafka" % "2.4.0" % IntegrationTest)
   )
 
-// lazy val docs = project
-//   .in(file("kafka-lib-docs"))
-//   .settings(
-//     mdocOut := file("kafka-lib-docs"),
-//     publishTo := None,
-//     publishArtifact := false,
-//     publish := {},
-//     publishLocal := {}
-//   )
-//   .dependsOn(kafkaClient)
-//   .enablePlugins(MdocPlugin)
-
 lazy val doNotPublishArtifact = Seq(
   publishArtifact := false,
   publishArtifact in (Compile, packageDoc) := false,
