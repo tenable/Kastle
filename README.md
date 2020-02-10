@@ -1,5 +1,5 @@
 <p align="center">
-<img src="https://raw.githubusercontent.com/tenable/Kastle/master/docs/KASTLE.png" alt="Kastle" width="200" height="200">
+<img src="https://raw.githubusercontent.com/tenable/Kastle/master/site/main/docs/img/KASTLE.png" alt="Kastle" width="200" height="200">
 </p>
 
 ### Kastle - Kafka Client
@@ -17,7 +17,7 @@ The packages are published on Maven Central.
 The latest version is 1.1.x. See the badge at the top of the README for the exact version number.
 
 ```scala
-libraryDependencies += "com.tenable" %% "kastle" % "1.1.x"
+libraryDependencies += "com.tenable.library" %% "Kastle" % "1.1.x"
 ```
 
 ## Getting started
@@ -32,6 +32,26 @@ The kastle project welcomes contributions from anybody wishing to participate. A
 People are expected to follow the [Scala Code of Conduct](./CODE_OF_CONDUCT.md) when discussing kastle on GitHub, Gitter, or other venues.
 
 Feel free to open an issue if you notice a bug, have an idea for a feature, or have a question about the code. Pull requests are also gladly accepted. For more information, check out the [contributor guide](./CONTRIBUTING.md).
+
+### Producer
+[Mdoc docs.](./client/Producer.md)
+
+### Consumer
+[Mdoc docs.](./client/Consumer.md)
+
+### Development
+
+**Unit tests:**
+```bash
+sbt test
+```
+
+**Integration tests**
+Integration tests will run against an in-memory kafka.
+
+```bash
+sbt it:test
+```
 
 ## License
 

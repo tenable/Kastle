@@ -54,18 +54,6 @@ lazy val doNotPublishArtifact = Seq(
   publishArtifact in (Compile, packageBin) := false
 )
 
-lazy val docs = project
-  .in(file("kafka-lib-docs"))
-  .settings(
-    mdocOut := file("kafka-lib-docs"),
-    publishTo := None,
-    publishArtifact := false,
-    publish := {},
-    publishLocal := {}
-  )
-  .dependsOn(kafkaClient)
-  .enablePlugins(MdocPlugin)
-
 lazy val site = project
   .in(file("site"))
   .enablePlugins(MicrositesPlugin)
@@ -76,16 +64,21 @@ lazy val site = project
     Seq(
       micrositeName := "Kastle",
       micrositeDescription := "Purely functional, effectful, resource-safe, kafka library for Scala",
+      micrositeHomepage := "https://tenable.github.io/Kastle",
+      micrositeBaseUrl := "Kastle",
+      micrositeOrganizationHomepage := "https://www.tenable.com",
+      micrositeTwitter := "@TenableSecurity",
       micrositeAuthor := "Tenable",
-      micrositeGithubOwner := "Tenable",
-      micrositeGithubRepo := "lib-katsle",
-      micrositeFooterText := None,
+      micrositeGithubOwner := "tenable",
+      micrositeGithubRepo := "Kastle",
+      micrositeFooterText := Some("Copyright Tenable, Inc 2020"),
       micrositeHighlightTheme := "atom-one-light",
       micrositeCompilingDocsTool := WithMdoc,
       fork in mdoc := true, // ?????
       // sourceDirectory in Compile := baseDirectory.value / "src",
       // sourceDirectory in Test := baseDirectory.value / "test",
       mdocIn := (sourceDirectory in Compile).value / "docs",
+      micrositeExtraMdFilesOutput := resourceManaged.value / "main" / "jekyll",
       micrositeExtraMdFiles := Map(
         file("README.md") -> ExtraMdFileConfig(
           "index.md",
