@@ -1,5 +1,5 @@
 <p align="center">
-<img src="https://raw.githubusercontent.com/tenable/Kastle/master/site/main/docs/img/KASTLE.png" alt="Kastle" width="200" height="200">
+<img src="https://raw.githubusercontent.com/tenable/Kastle/master/site/src/main/docs/img/KASTLE.png" alt="Kastle" width="200" height="200">
 </p>
 
 ### Kastle - Kafka Client
