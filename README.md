@@ -22,8 +22,8 @@ libraryDependencies += "com.tenable.library" %% "Kastle" % "1.1.x"
 
 ## Getting started
 
-- [Consumer examples](site/consumers.md)
-- [Producer examples](site/producers.md)
+- [Consumer examples](site/src/main/docs/consumer.md)
+- [Producer examples](site/src/main/docs/producer.md)
 
 ## Contributing
 
