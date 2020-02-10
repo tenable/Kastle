@@ -1,5 +1,5 @@
 <p align="center">
-<img src="https://raw.githubusercontent.com/tenable/Kastle/master/site/main/docs/KASTLE.png" alt="Kastle" width="200" height="200">
+<img src="https://raw.githubusercontent.com/tenable/Kastle/master/site/main/docs/img/KASTLE.png" alt="Kastle" width="200" height="200">
 </p>
 
 ### Kastle - Kafka Client
@@ -33,14 +33,6 @@ People are expected to follow the [Scala Code of Conduct](./CODE_OF_CONDUCT.md) 
 
 Feel free to open an issue if you notice a bug, have an idea for a feature, or have a question about the code. Pull requests are also gladly accepted. For more information, check out the [contributor guide](./CONTRIBUTING.md).
 
-<!-- **Temporary publishing instructions:**
-
-Manually bump version then from sbt console:
-`+publish`
-
-The "+" is important -- it publishes the 2.12 version as well as the 2.13 version. -->
-
-
 ### Producer
 [Mdoc docs.](./client/Producer.md)
 
@@ -49,26 +41,16 @@ The "+" is important -- it publishes the 2.12 version as well as the 2.13 versio
 
 ### Development
 
-To run unit tests:
-
+**Unit tests:**
 ```bash
 sbt test
 ```
 
-To run integration tests, you need to ensure the Kafka/ZK docker compose configuration is running. Either run with:
+**Integration tests**
+Integration tests will run against an in-memory kafka.
 
 ```bash
-# start containers
-docker-compose up -d
-
-# run integration tests once containers are up
 sbt it:test
-```
-
-Alternatively run using the checked bash script, which will start up the required docker containers, run the integration tests, and then shut everything down again once complete.
-
-```bash
-./run-it-tests
 ```
 
 ## License
