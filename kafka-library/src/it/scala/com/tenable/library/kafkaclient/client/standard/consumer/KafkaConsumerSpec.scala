@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 
 import cats.syntax.apply._
 import com.tenable.library.kafkaclient.client.standard.consumer.actions.ProcessAction
-import com.tenable.library.kafkaclient.config.{KafkaConsumerConfig}
+import com.tenable.library.kafkaclient.config.KafkaConsumerConfig
 import com.tenable.library.kafkaclient.testhelpers.AsyncIntegrationSpec
 import com.tenable.library.kafkaclient.testhelpers.GeneralKafkaHelpers._
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -19,6 +19,7 @@ import cats.effect.IO
 import cats.syntax.applicativeError._
 import cats.instances.list._
 import cats.syntax.traverse._
+import com.github.ghik.silencer.silent
 import com.tenable.library.kafkaclient.client.standard.KafkaConsumerIO
 import com.tenable.library.kafkaclient.client.standard.consumer.units.TPBatch.TPRecords
 
@@ -44,6 +45,7 @@ class TestPartitioner2Partitions extends Partitioner {
   override def configure(configs: util.Map[String, _]): Unit = ()
 }
 
+@silent
 class KafkaConsumerSpec extends AsyncIntegrationSpec with EmbeddedKafka with BeforeAndAfterAll {
   override implicit val patienceConfig: PatienceConfig =
     PatienceConfig(timeout = 20.seconds, interval = 500.millis)
