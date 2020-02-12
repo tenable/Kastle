@@ -57,7 +57,8 @@ lazy val publishSettings = Seq(
   licenses := List("Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt")),
   homepage := Some(url("https://tenable.github.io/Kastle")),
   publishTo := sonatypePublishToBundle.value,
-  publishMavenStyle := true
+  publishMavenStyle := true,
+  useGpgPinentry := true
 )
 
 lazy val doNotPublishArtifact = Seq(
