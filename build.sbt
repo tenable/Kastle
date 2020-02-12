@@ -47,7 +47,7 @@ lazy val kafkaClient = (project in file("kafka-library"))
   )
 
 lazy val publishSettings = Seq(
-  organization := "com.tenable.kastle",
+  organization := "com.tenable",
   organizationName := "Tenable",
   organizationHomepage := Some(url("https://www.tenable.com/")),
   scmInfo := Some(ScmInfo(
