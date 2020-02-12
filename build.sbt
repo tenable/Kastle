@@ -37,6 +37,7 @@ lazy val kafkaClient = (project in file("kafka-library"))
     name := "kafka-client",
     addCompilerPlugin(silencerPlugin),
     addCompilerPlugin(kindProjector),
+    publishTo := sonatypePublishToBundle.value,
     libraryDependencies ++= Seq(
       silencerPlugin,
       slf4jApi,
@@ -55,6 +56,7 @@ lazy val kafkaClient = (project in file("kafka-library"))
   )
 
 lazy val doNotPublishArtifact = Seq(
+  skip in publish := true,
   publishArtifact := false,
   publishArtifact in (Compile, packageDoc) := false,
   publishArtifact in (Compile, packageSrc) := false,
