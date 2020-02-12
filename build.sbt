@@ -13,11 +13,7 @@ inThisBuild(
 )
 
 lazy val root = (project in file("."))
-  .settings(
-    publishArtifact := false,
-    publish := {},
-    publishLocal := {}
-  )
+  .settings(doNotPublishArtifact)
   .settings(publishSettings)
   .aggregate(kafkaClient)
 
