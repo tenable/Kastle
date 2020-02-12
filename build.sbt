@@ -1,5 +1,4 @@
 import Dependencies._
-import sbt.Resolver
 
 lazy val commonTestDependencies = Seq(
   scalaTest,

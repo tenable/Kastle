@@ -1,6 +1,7 @@
 package com.tenable.library.kafkaclient.client.standard
 
 import cats.effect.IO
+import com.github.ghik.silencer.silent
 import org.apache.kafka.clients.admin.{NewPartitions, TopicListing}
 import com.tenable.library.kafkaclient.testhelpers.{GeneralKafkaHelpers, SyncIntegrationSpec}
 
@@ -10,6 +11,7 @@ import scala.concurrent.duration.DurationInt
 import net.manub.embeddedkafka.EmbeddedKafka
 import org.scalatest.BeforeAndAfterAll
 
+@silent
 class KafkaAdminIOSpec extends SyncIntegrationSpec with EmbeddedKafka with BeforeAndAfterAll {
   import GeneralKafkaHelpers._
   implicit val timer = IO.timer(ExecutionContext.global)
