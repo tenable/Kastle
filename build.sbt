@@ -14,11 +14,11 @@ inThisBuild(
 
 lazy val root = (project in file("."))
   .settings(
-    publishTo := sonatypePublishToBundle.value,
     publishArtifact := false,
     publish := {},
     publishLocal := {}
   )
+  .settings(publishSettings)
   .aggregate(kafkaClient)
 
 lazy val kafkaClient = (project in file("kafka-library"))
@@ -56,7 +56,8 @@ lazy val publishSettings = Seq(
   description := "A purely functional, effectful, resource-safe, kafka library for Scala",
   licenses := List("Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt")),
   homepage := Some(url("https://tenable.github.io/Kastle")),
-  publishTo := sonatypePublishToBundle.value
+  publishTo := sonatypePublishToBundle.value,
+  publishMavenStyle := true
 )
 
 lazy val doNotPublishArtifact = Seq(
