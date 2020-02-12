@@ -58,6 +58,7 @@ lazy val publishSettings = Seq(
 )
 
 lazy val doNotPublishArtifact = Seq(
+  skip in sonatypeBundleRelease := true,
   skip in publish := true,
   publishArtifact := false,
   publishArtifact in (Compile, packageDoc) := false,
