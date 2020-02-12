@@ -14,7 +14,7 @@ inThisBuild(
 
 lazy val root = (project in file("."))
   .settings(
-    publishTo := None,
+    publishTo := sonatypePublishToBundle.value,
     publishArtifact := false,
     publish := {},
     publishLocal := {}
