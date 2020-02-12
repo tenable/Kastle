@@ -7,15 +7,6 @@ lazy val commonTestDependencies = Seq(
 
 inThisBuild(
   List(
-    organization := "com.tenable.kastle",
-    organizationName := "Tenable",
-    organizationHomepage := Some(url("https://www.tenable.com/")),
-    scmInfo := Some(ScmInfo(
-      url("https://github.com/tenable/kastle"),
-      "scm:git@github.com:tenable/Kastle.git")),
-    description := "A purely functional, effectful, resource-safe, kafka library for Scala",
-    licenses := List("Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt")),
-    homepage := Some(url("https://tenable.github.io/Kastle")),
     scalaVersion := "2.12.10",
     crossScalaVersions := Seq("2.12.10", "2.13.1")
   )
@@ -33,11 +24,11 @@ lazy val root = (project in file("."))
 lazy val kafkaClient = (project in file("kafka-library"))
   .overrideConfigs(IntegrationSettings.config)
   .settings(IntegrationSettings.configSettings)
+  .settings(publishSettings)
   .settings(
     name := "kafka-client",
     addCompilerPlugin(silencerPlugin),
     addCompilerPlugin(kindProjector),
-    publishTo := sonatypePublishToBundle.value,
     libraryDependencies ++= Seq(
       silencerPlugin,
       slf4jApi,
@@ -54,6 +45,19 @@ lazy val kafkaClient = (project in file("kafka-library"))
       ++ commonTestDependencies.map(_  % IntegrationTest)
       ++ Seq("io.github.embeddedkafka" %% "embedded-kafka" % "2.4.0" % IntegrationTest)
   )
+
+lazy val publishSettings = Seq(
+  organization := "com.tenable.kastle",
+  organizationName := "Tenable",
+  organizationHomepage := Some(url("https://www.tenable.com/")),
+  scmInfo := Some(ScmInfo(
+    url("https://github.com/tenable/kastle"),
+    "scm:git@github.com:tenable/Kastle.git")),
+  description := "A purely functional, effectful, resource-safe, kafka library for Scala",
+  licenses := List("Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt")),
+  homepage := Some(url("https://tenable.github.io/Kastle")),
+  publishTo := sonatypePublishToBundle.value
+)
 
 lazy val doNotPublishArtifact = Seq(
   skip in publish := true,
