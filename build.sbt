@@ -28,11 +28,7 @@ inThisBuild(
   )
 )
 
-lazy val root = (project in file("."))
-  .settings(doNotPublishArtifact)
-  .aggregate(kastle)
-
-lazy val kastle = (project in file("kafka-library"))
+lazy val kastle = (project in file("."))
   .overrideConfigs(IntegrationSettings.config)
   .settings(IntegrationSettings.configSettings)
   .settings(publishSettings)
