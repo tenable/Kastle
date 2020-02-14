@@ -15,14 +15,14 @@ inThisBuild(
 lazy val root = (project in file("."))
   .settings(doNotPublishArtifact)
   .settings(publishSettings)
-  .aggregate(kafkaClient)
+  .aggregate(kastle)
 
-lazy val kafkaClient = (project in file("kafka-library"))
+lazy val kastle = (project in file("kafka-library"))
   .overrideConfigs(IntegrationSettings.config)
   .settings(IntegrationSettings.configSettings)
   .settings(publishSettings)
   .settings(
-    name := "kafka-client",
+    name := "kastle",
     addCompilerPlugin(silencerPlugin),
     addCompilerPlugin(kindProjector),
     libraryDependencies ++= Seq(
@@ -100,4 +100,4 @@ lazy val site = project
       )
     )
   }
-  .dependsOn(kafkaClient)
+  .dependsOn(kastle)
