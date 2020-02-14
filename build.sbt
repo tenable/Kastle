@@ -8,13 +8,28 @@ lazy val commonTestDependencies = Seq(
 inThisBuild(
   List(
     scalaVersion := "2.12.10",
-    crossScalaVersions := Seq("2.12.10", "2.13.1")
+    crossScalaVersions := Seq("2.12.10", "2.13.1"),
+    organization := "com.tenable",
+    organizationName := "Tenable",
+    organizationHomepage := Some(url("https://www.tenable.com/")),
+    scmInfo := Some(ScmInfo(
+      url("https://github.com/tenable/kastle"),
+      "scm:git@github.com:tenable/Kastle.git")),
+    description := "A purely functional, effectful, resource-safe, kafka library for Scala.",
+    licenses := List("Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt")),
+    homepage := Some(url("https://tenable.github.io/Kastle")),
+    developers := List(
+      Developer(
+        id = "agbell",
+        name = "Adam Bell",
+        email = "",
+        url = url("https://adamgordonbell.com/"))
+    )
   )
 )
 
 lazy val root = (project in file("."))
   .settings(doNotPublishArtifact)
-  .settings(publishSettings)
   .aggregate(kastle)
 
 lazy val kastle = (project in file("kafka-library"))
@@ -43,19 +58,9 @@ lazy val kastle = (project in file("kafka-library"))
   )
 
 lazy val publishSettings = Seq(
-  organization := "com.tenable",
-  organizationName := "Tenable",
-  organizationHomepage := Some(url("https://www.tenable.com/")),
-  scmInfo := Some(ScmInfo(
-    url("https://github.com/tenable/kastle"),
-    "scm:git@github.com:tenable/Kastle.git")),
-  description := "A purely functional, effectful, resource-safe, kafka library for Scala",
-  licenses := List("Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt")),
-  homepage := Some(url("https://tenable.github.io/Kastle")),
   publishTo := sonatypePublishToBundle.value,
   publishMavenStyle := true,
-  useGpgPinentry := true,
-  developers := List(Developer(id = "agbell", name = "Adam Bell", email = "", url = url("https://adamgordonbell.com/")))
+  useGpgPinentry := true
 )
 
 lazy val doNotPublishArtifact = Seq(
