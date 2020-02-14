@@ -23,7 +23,7 @@ inThisBuild(
         id = "agbell",
         name = "Adam Bell",
         email = "",
-        url = url("https://adamgordonbell.com/"))
+        url = url("https://github.com/tenable"))
     )
   )
 )
