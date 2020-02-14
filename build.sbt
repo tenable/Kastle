@@ -7,26 +7,33 @@ lazy val commonTestDependencies = Seq(
 
 inThisBuild(
   List(
-    organization := "com.tenable.katsle.library",
     scalaVersion := "2.12.10",
-    crossScalaVersions := Seq("2.12.10", "2.13.1")
+    crossScalaVersions := Seq("2.12.10", "2.13.1"),
+    organization := "com.tenable",
+    organizationName := "Tenable",
+    organizationHomepage := Some(url("https://www.tenable.com/")),
+    scmInfo := Some(ScmInfo(
+      url("https://github.com/tenable/kastle"),
+      "scm:git@github.com:tenable/Kastle.git")),
+    description := "A purely functional, effectful, resource-safe, kafka library for Scala.",
+    licenses := List("Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt")),
+    homepage := Some(url("https://tenable.github.io/Kastle")),
+    developers := List(
+      Developer(
+        id = "agbell",
+        name = "Adam Bell",
+        email = "",
+        url = url("https://github.com/tenable"))
+    )
   )
 )
 
-lazy val root = (project in file("."))
-  .settings(
-    publishTo := None,
-    publishArtifact := false,
-    publish := {},
-    publishLocal := {}
-  )
-  .aggregate(kafkaClient)
-
-lazy val kafkaClient = (project in file("kafka-library"))
+lazy val kastle = (project in file("."))
   .overrideConfigs(IntegrationSettings.config)
   .settings(IntegrationSettings.configSettings)
+  .settings(publishSettings)
   .settings(
-    name := "Kafka Client",
+    name := "kastle",
     addCompilerPlugin(silencerPlugin),
     addCompilerPlugin(kindProjector),
     libraryDependencies ++= Seq(
@@ -46,7 +53,15 @@ lazy val kafkaClient = (project in file("kafka-library"))
       ++ Seq("io.github.embeddedkafka" %% "embedded-kafka" % "2.4.0" % IntegrationTest)
   )
 
+lazy val publishSettings = Seq(
+  publishTo := sonatypePublishToBundle.value,
+  publishMavenStyle := true,
+  useGpgPinentry := true
+)
+
 lazy val doNotPublishArtifact = Seq(
+  skip in sonatypeBundleRelease := true,
+  skip in publish := true,
   publishArtifact := false,
   publishArtifact in (Compile, packageDoc) := false,
   publishArtifact in (Compile, packageSrc) := false,
@@ -87,4 +102,4 @@ lazy val site = project
       )
     )
   }
-  .dependsOn(kafkaClient)
+  .dependsOn(kastle)
