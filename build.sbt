@@ -54,7 +54,8 @@ lazy val publishSettings = Seq(
   homepage := Some(url("https://tenable.github.io/Kastle")),
   publishTo := sonatypePublishToBundle.value,
   publishMavenStyle := true,
-  useGpgPinentry := true
+  useGpgPinentry := true,
+  developers := List(Developer(id = "agbell", name = "Adam Bell", email = "", url = url("https://adamgordonbell.com/")))
 )
 
 lazy val doNotPublishArtifact = Seq(
