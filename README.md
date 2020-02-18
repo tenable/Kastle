@@ -14,10 +14,10 @@ A purely functional, effectful, resource-safe, kafka library for Scala
 
 The packages are published on Maven Central.
 
-The latest version is 1.1.x. See the badge at the top of the README for the exact version number.
+See the badge at the top of the README for the latest version number.
 
 ```scala
-libraryDependencies += "com.tenable.library" %% "Kastle" % "1.1.x"
+libraryDependencies += "com.tenable" %% "kastle" % "<version>"
 ```
 
 ## Getting started
