@@ -31,6 +31,8 @@ node(Constants.DOCKERNODE) {
     sshagent([Constants.BITBUCKETUSER]) {
         echo 'Running tag for: ' + theTag
 
+        sh "ssh-keyscan -H  github.com >> ~/.ssh/known_hosts"
+
         echo sh(script:"git tag -m '${theTag}' ${theTag}", returnStdout:true)
         echo sh(script:"git push origin --tags ${theTag}", returnStdout:true)
     }
