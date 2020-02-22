@@ -21,5 +21,12 @@ node(Constants.DOCKERNODE) {
 
     stash name: 'FULLVERSION', includes: 'FULLVERSION'
 
-    general.tagTheVersion()
+    String theTag = "APP1000_0.0.0"
+
+    sshagent([Constants.BITBUCKETUSER]) {
+        echo 'Running tag for: ' + theTag
+
+        echo sh(script:"git tag -m '${theTag}' ${theTag}", returnStdout:true)
+        echo sh(script:"git push origin --tags ${theTag}", returnStdout:true)
+    }
 }
