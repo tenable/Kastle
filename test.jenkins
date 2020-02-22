@@ -10,7 +10,7 @@ import com.tenable.jenkins.deployments.*
 
 BuildParams bparams = new BuildParams(this, 1000)
 
-GeneralBuild general = new GeneralBuild(script, parameters)
+GeneralBuild general = new GeneralBuild(this, parameters)
 BuildsCommon buildsCommon = new BuildsCommon(this, , parameters)
 
 node(Constants.DOCKERNODE) {
