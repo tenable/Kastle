@@ -19,5 +19,7 @@ node(Constants.DOCKERNODE) {
 
     sh "echo 0.0.0 > FULLVERSION"
 
+    stash name: 'FULLVERSION', includes: 'FULLVERSION'
+
     general.tagTheVersion()
 }
