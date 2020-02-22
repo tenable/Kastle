@@ -17,6 +17,8 @@ node(Constants.DOCKERNODE) {
     buildsCommon.cleanup()
     buildsCommon.prepareGit()
 
+    sh 'cat .git/config'
+
     checkout scm
 
     sh "echo 0.0.0 > FULLVERSION"
