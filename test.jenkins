@@ -16,6 +16,7 @@ BuildsCommon buildsCommon = new BuildsCommon(this)
 node(Constants.DOCKERNODE) {
     buildsCommon.cleanup()
     buildsCommon.prepareGit()
+    buildsCommon.prepareGitRepo()
 
     sh 'cat .git/config'
 
