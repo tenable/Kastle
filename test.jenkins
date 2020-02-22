@@ -1,0 +1,23 @@
+@Library('tenable.common') _
+
+
+import com.tenable.jenkins.*
+import com.tenable.jenkins.builds.*
+import com.tenable.jenkins.ui.*
+import com.tenable.jenkins.builds.nexusiq.*
+import com.tenable.jenkins.common.*
+import com.tenable.jenkins.deployments.*
+
+BuildParams bparams = new BuildParams(this, 1000)
+
+GeneralBuild general = new GeneralBuild(script, parameters)
+BuildsCommon buildsCommon = new BuildsCommon(this
+
+node(Constants.DOCKERNODE) {
+    buildsCommon.cleanup()
+    checkout scm
+
+    sh "echo 0.0.0 > FULLVERSION"
+
+    general.tagTheVersion()
+}
