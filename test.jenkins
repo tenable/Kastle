@@ -15,6 +15,8 @@ BuildsCommon buildsCommon = new BuildsCommon(this)
 
 node(Constants.DOCKERNODE) {
     buildsCommon.cleanup()
+    buildsCommon.prepareGit()
+
     checkout scm
 
     sh "echo 0.0.0 > FULLVERSION"
