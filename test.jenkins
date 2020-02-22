@@ -15,12 +15,12 @@ BuildsCommon buildsCommon = new BuildsCommon(this)
 
 node(Constants.DOCKERNODE) {
     buildsCommon.cleanup()
-    buildsCommon.prepareGit()
-    buildsCommon.prepareGitRepo()
+    checkout scm
 
     sh 'cat .git/config'
 
-    checkout scm
+    buildsCommon.prepareGit()
+    buildsCommon.prepareGitRepo()
 
     sh "echo 0.0.0 > FULLVERSION"
 
