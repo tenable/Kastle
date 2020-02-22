@@ -11,7 +11,7 @@ import com.tenable.jenkins.deployments.*
 BuildParams bparams = new BuildParams(this, 1000)
 
 GeneralBuild general = new GeneralBuild(this, bparams)
-BuildsCommon buildsCommon = new BuildsCommon(this, bparams)
+BuildsCommon buildsCommon = new BuildsCommon(this)
 
 node(Constants.DOCKERNODE) {
     buildsCommon.cleanup()
