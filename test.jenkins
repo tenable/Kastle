@@ -26,7 +26,7 @@ node(Constants.DOCKERNODE) {
 
     stash name: 'FULLVERSION', includes: 'FULLVERSION'
 
-    String theTag = "APP1000_0.0.0"
+    String theTag = "APP1000_0.0.1"
 
     sshagent([Constants.BITBUCKETUSER]) {
         echo 'Running tag for: ' + theTag
