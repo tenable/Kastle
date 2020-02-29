@@ -8,7 +8,7 @@ object Dependencies {
   // Javax excluded and added specifially to avoid https://github.com/sbt/sbt/issues/3618
   lazy val javax = "javax.ws.rs" % "javax.ws.rs-api" % "2.1.1" artifacts Artifact("javax.ws.rs-api", "jar", "jar")
   // included explicitly to let us deal with vulns
-  lazy val jacksonDatabind = "com.fasterxml.jackson.core" % "jackson-databind" % "2.9.10"
+  lazy val jacksonDatabind = "com.fasterxml.jackson.core" % "jackson-databind" % "2.9.10.3"
   lazy val kafka = "org.apache.kafka" % "kafka-clients" % "2.4.0" exclude("org.slf4j", "slf4j-log4j12")
   lazy val kafkaRelated = Seq(kafka, javax)
 
