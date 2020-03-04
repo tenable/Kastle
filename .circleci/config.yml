@@ -8,6 +8,14 @@ defaultEnv: &defaultEnv
     JVM_OPTS: -Xmx3200m
     TERM: dumb
 
+# Download and cache dependencies
+dependencies: &dependencies
+  - restore_cache:
+      keys:
+        - v1-dependencies-{{ checksum "build.sbt" }}
+        # fallback to using the latest cache if no exact match is found
+        - v1-dependencies-{{ checksum "project/Dependencies.scala" }}
+
 version: 2
 jobs:
   build:
@@ -15,19 +23,17 @@ jobs:
     steps:
       - checkout
       # Download and cache dependencies
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "build.sbt" }}
-            # fallback to using the latest cache if no exact match is found
-            - v1-dependencies-{{ checksum "project/Dependencies.scala" }}
+      <<: *dependencies
       - run: cat /dev/null | sbt compile test:compile
       - save_cache:
           paths:
             - ~/.m2
-          key: v1-dependencies--{{ checksum "build.sbt" }}
+          key: v1-dependencies-{{ checksum "build.sbt" }}
   test:
     <<: *defaultEnv
     steps:
+      - checkout
+      <<: *dependencies
       - run: cat /dev/null | sbt test it:test
 
 workflows:
