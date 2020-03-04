@@ -8,12 +8,6 @@ defaultEnv: &defaultEnv
     JVM_OPTS: -Xmx3200m
     TERM: dumb
 
-filters: &filters
-  filters:
-    branches:
-      ignore:
-        - gh-pages
-
 version: 2
 jobs:
   build:
@@ -41,8 +35,14 @@ workflows:
   build_and_test:
     jobs:
       - build:
-        <<: *filters
+          filters:
+            branches:
+              ignore:
+                - gh-pages
       - test:
-          <<: *filters
           requires:
             - build
+          filters:
+            branches:
+              ignore:
+                - gh-pages
