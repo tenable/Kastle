@@ -16,10 +16,10 @@ jobs:
       - checkout
       # Download and cache dependencies
       - restore_cache:
-        keys:
-          - v1-dependencies-{{ checksum "build.sbt" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-{{ checksum "project/Dependencies.scala" }}
+          keys:
+            - v1-dependencies-{{ checksum "build.sbt" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-{{ checksum "project/Dependencies.scala" }}
       - run: cat /dev/null | sbt compile test:compile
       - save_cache:
           paths:
