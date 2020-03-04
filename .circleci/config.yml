@@ -10,10 +10,10 @@ defaultEnv: &defaultEnv
 
 # Download and cache dependencies
 dependencies: &dependencies
-    keys:
-      - v1-dependencies-{{ checksum "build.sbt" }}
-      # fallback to using the latest cache if no exact match is found
-      - v1-dependencies-{{ checksum "project/Dependencies.scala" }}
+  keys:
+    - v1-dependencies-{{ checksum "build.sbt" }}
+    # fallback to using the latest cache if no exact match is found
+    - v1-dependencies-{{ checksum "project/Dependencies.scala" }}
 
 version: 2
 jobs:
@@ -21,7 +21,7 @@ jobs:
     <<: *defaultEnv
     steps:
       - checkout
-      - restore_cache
+      - restore_cache:
         <<: *dependencies
       - run: cat /dev/null | sbt compile test:compile
       - save_cache:
