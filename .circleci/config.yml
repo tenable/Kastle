@@ -41,8 +41,8 @@ workflows:
   build_and_test:
     jobs:
       - build:
-        <<: filters
+        <<: *filters
       - test:
-          <<: filters
+          <<: *filters
           requires:
             - build
