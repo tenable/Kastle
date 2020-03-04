@@ -22,7 +22,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-        <<: *dependencies
+          <<: *dependencies
       - run: cat /dev/null | sbt compile test:compile
       - save_cache:
           paths:
@@ -33,7 +33,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-        <<: *dependencies
+          <<: *dependencies
       - run: cat /dev/null | sbt test it:test
 
 workflows:
