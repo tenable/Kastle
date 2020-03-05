@@ -36,7 +36,7 @@ case class KafkaProducerConfig(
     batchSize: Int,                           //in bytes
     linger: FiniteDuration,                   //wait up to this long to receive batchsize worth of messages before sending
     bufferSize: Long,                         //memory to use for records waiting to be sent
-    additionalProperties: Map[String, AnyRef] //properties in here override ones set by above variables
+    additionalProperties: Map[String, String] //properties in here override ones set by above variables
 ) {
 
   @silent
@@ -53,7 +53,7 @@ case class KafkaProducerConfig(
     props.put(ProducerConfig.BATCH_SIZE_CONFIG, new Integer(batchSize))
     props.put(ProducerConfig.LINGER_MS_CONFIG, new Integer(linger.toMillis.toInt))
     props.put(ProducerConfig.BUFFER_MEMORY_CONFIG, new java.lang.Long(bufferSize.toString))
-    props.putAll(additionalProperties.asJava)
+    additionalProperties.foreach { case (k, v) => props.setProperty(k, v) }
     props
   }
 }
