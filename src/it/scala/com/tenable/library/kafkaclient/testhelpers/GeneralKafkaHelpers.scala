@@ -297,7 +297,7 @@ object GeneralKafkaHelpers {
       linger = 0.millis,
       bufferSize = 1024L * 1024L,
       additionalProperties = Map(
-        ProducerConfig.PARTITIONER_CLASS_CONFIG -> partitioner
+        ProducerConfig.PARTITIONER_CLASS_CONFIG -> partitioner.getName()
       )
     )
     KafkaProducerIO
