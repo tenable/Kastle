@@ -6,7 +6,6 @@ import com.github.ghik.silencer.silent
 import org.apache.kafka.clients.consumer.ConsumerConfig
 
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
-import scala.collection.JavaConverters._
 
 case class KafkaConsumerConfig(
     connectionString: String,
@@ -41,7 +40,7 @@ case class KafkaConsumerConfig(
     maybeSessionTimeout.foreach { timeout =>
       props.setProperty(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, timeout.toMillis.toString)
     }
-    props.putAll(additionalConfig.asJava)
+    additionalConfig.foreach { case (k, v) => props.setProperty(k, v) }
     props
   }
 
