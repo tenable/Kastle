@@ -42,10 +42,7 @@ lazy val kastle = (project in file("."))
       catsCore,
       catsFree,
       catsEffect,
-      simulacrum,
-      avro,
-      typesafeConfig,
-      jacksonDatabind
+      simulacrum
     )
       ++ kafkaRelated
       ++ commonTestDependencies.map(_  % Test)
