@@ -1,37 +1,54 @@
+defaultEnv: &defaultEnv
+  docker:
+    # specify the version you desire here
+    - image: circleci/openjdk:8-jdk
+  working_directory: ~/Kastle
+  environment:
+    # Customize the JVM maximum heap limit
+    JVM_OPTS: -Xmx3200m
+    TERM: dumb
+
+# Download and cache dependencies
+dependencies: &dependencies
+  keys:
+    - v1-dependencies-{{ checksum "build.sbt" }}
+    # fallback to using the latest cache if no exact match is found
+    - v1-dependencies-{{ checksum "project/Dependencies.scala" }}
+
 version: 2
 jobs:
   build:
-    branches:
-      ignore:
-        - gh-pages
-    docker:
-      # specify the version you desire here
-      - image: circleci/openjdk:8-jdk
-
-    working_directory: ~/Kastle
-
-    environment:
-      # Customize the JVM maximum heap limit
-      JVM_OPTS: -Xmx3200m
-      TERM: dumb
-
+    <<: *defaultEnv
     steps:
       - checkout
-
-      # Download and cache dependencies
       - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "build.sbt" }}
-            # fallback to using the latest cache if no exact match is found
-            - v1-dependencies-{{ checksum "project/Dependencies.scala" }}
-
-      - run: cat /dev/null | sbt test:compile
-
+          <<: *dependencies
+      - run: cat /dev/null | sbt compile test:compile
       - save_cache:
           paths:
             - ~/.m2
-          key: v1-dependencies--{{ checksum "build.sbt" }}
+          key: v1-dependencies-{{ checksum "build.sbt" }}
+  test:
+    <<: *defaultEnv
+    steps:
+      - checkout
+      - restore_cache:
+          <<: *dependencies
+      - run: cat /dev/null | sbt test it:test
 
-      # run tests!
-      - run: cat /dev/null | sbt test:test
-      - run: sbt it:test
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build:
+          filters:
+            branches:
+              ignore:
+                - gh-pages
+      - test:
+          requires:
+            - build
+          filters:
+            branches:
+              ignore:
+                - gh-pages
