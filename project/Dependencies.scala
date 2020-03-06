@@ -15,7 +15,7 @@ object Dependencies {
 
   lazy val catsEffect = "org.typelevel" %% "cats-effect" % "2.1.2"
 
-  lazy val simulacrum = "com.github.mpilquist" %% "simulacrum" % "0.19.0"
+  lazy val simulacrum = "org.typelevel" %% "simulacrum" % "1.0.0"
 
   lazy val scalaTest   = "org.scalatest" %% "scalatest"   % "3.1.0"
   lazy val mockitoCore = "org.mockito"   % "mockito-core" % "3.1.0"
