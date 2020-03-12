@@ -47,7 +47,7 @@ lazy val kastle = (project in file("."))
       ++ kafkaRelated
       ++ commonTestDependencies.map(_  % Test)
       ++ commonTestDependencies.map(_  % IntegrationTest)
-      ++ Seq("io.github.embeddedkafka" %% "embedded-kafka" % "2.4.0" % IntegrationTest)
+      ++ Seq("io.github.embeddedkafka" %% "embedded-kafka" % "2.4.1" % IntegrationTest)
   )
 
 lazy val publishSettings = Seq(
