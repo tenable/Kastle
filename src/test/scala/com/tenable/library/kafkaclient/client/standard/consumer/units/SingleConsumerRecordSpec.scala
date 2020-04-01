@@ -1,7 +1,11 @@
 package com.tenable.library.kafkaclient.client.standard.consumer.units
 
 import com.github.ghik.silencer.silent
-import com.tenable.library.kafkaclient.client.standard.consumer.{BatchContext, GOffsets, KafkaUnitTestUtils}
+import com.tenable.library.kafkaclient.client.standard.consumer.{
+  BatchContext,
+  GOffsets,
+  KafkaUnitTestUtils
+}
 import org.apache.kafka.clients.consumer.{ConsumerRecord, ConsumerRecords}
 import org.apache.kafka.common.TopicPartition
 
@@ -106,7 +110,7 @@ class SingleConsumerRecordSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "return false if tp is not in the skipping partition in context" in {
-    val otherTp    = new TopicPartition("r", 4)
+    val otherTp = new TopicPartition("r", 4)
     val res = SingleConsumerRecord.kafkaProcessable
       .shouldFilter(new ConsumerRecord("r", 3, 30, "a", "a"), BatchContext(Set(otherTp)))
     res shouldBe false

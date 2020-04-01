@@ -2,14 +2,14 @@ package com.tenable.library.kafkaclient.client.standard
 
 import cats.effect.IO
 import com.github.ghik.silencer.silent
-import org.apache.kafka.clients.admin.{NewPartitions, TopicListing}
 import com.tenable.library.kafkaclient.testhelpers.{GeneralKafkaHelpers, SyncIntegrationSpec}
+import net.manub.embeddedkafka.EmbeddedKafka
+import org.apache.kafka.clients.admin.{NewPartitions, TopicListing}
+import org.scalatest.BeforeAndAfterAll
 
-import scala.util.Random
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.DurationInt
-import net.manub.embeddedkafka.EmbeddedKafka
-import org.scalatest.BeforeAndAfterAll
+import scala.util.Random
 
 @silent
 class KafkaAdminIOSpec extends SyncIntegrationSpec with EmbeddedKafka with BeforeAndAfterAll {
@@ -154,7 +154,7 @@ class KafkaAdminIOSpec extends SyncIntegrationSpec with EmbeddedKafka with Befor
           cleanupTopicsAfter(admin) {
             constructConsumer[IO](topics, _.copy(groupId = groupId)).use {
               consumer: KafkaConsumerIO[IO, String, String] =>
-                withProducer { producer: KafkaProducerIO[IO, String, String] =>
+                withProducerIO { producer: KafkaProducerIO[IO, String, String] =>
                   for {
                     sent   <- producer.send(topics.head.name, "some-key", "some-value")
                     record <- consumer.poll(10.seconds)(identity)
@@ -186,7 +186,7 @@ class KafkaAdminIOSpec extends SyncIntegrationSpec with EmbeddedKafka with Befor
           cleanupTopicsAfter(admin) {
             constructConsumer[IO](topics, _.copy(groupId = groupId)).use {
               consumer: KafkaConsumerIO[IO, String, String] =>
-                withProducer { producer: KafkaProducerIO[IO, String, String] =>
+                withProducerIO { producer: KafkaProducerIO[IO, String, String] =>
                   for {
                     _       <- producer.send(topics.head.name, "some-key", "some-value1")
                     record1 <- consumer.poll(10.seconds)(identity)
