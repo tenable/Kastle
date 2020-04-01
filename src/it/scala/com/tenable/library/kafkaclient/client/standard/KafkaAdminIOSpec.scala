@@ -70,6 +70,24 @@ class KafkaAdminIOSpec extends SyncIntegrationSpec with EmbeddedKafka with Befor
 
         task.unsafeRunSync
       }
+
+      "create a topic with additional config" in {
+        val topic = randomTopic.copy(properties = Map("cleanup.policy" -> "compact", "retention.ms" -> "-1"))
+
+        val task = withAdmin { admin: KafkaAdminIO[IO] =>
+          cleanupTopicsAfter(admin) {
+            for {
+              _                <- admin.createTopics(Set(topic))
+              describedConfigs <- admin.describeConfigsForTopic(List(topic.name))
+            } yield {
+              describedConfigs(topic.name)("cleanup.policy") mustBe "compact"
+              describedConfigs(topic.name)("retention.ms") mustBe "-1"
+            }
+          }
+        }
+
+        task.unsafeRunSync
+      }
     }
 
     "create partitions for given topics" when {
