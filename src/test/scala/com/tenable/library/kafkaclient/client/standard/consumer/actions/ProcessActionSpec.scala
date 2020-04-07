@@ -4,7 +4,11 @@ import java.time.Instant
 
 import cats.effect.IO
 import com.github.ghik.silencer.silent
-import com.tenable.library.kafkaclient.client.standard.consumer.{BatchContext, GOffsets, PausedTemporarily}
+import com.tenable.library.kafkaclient.client.standard.consumer.{
+  BatchContext,
+  GOffsets,
+  PausedTemporarily
+}
 import com.tenable.library.kafkaclient.client.standard.consumer.KafkaUnitTestUtils.KafkaConsumerIORecording
 import org.apache.kafka.common.TopicPartition
 

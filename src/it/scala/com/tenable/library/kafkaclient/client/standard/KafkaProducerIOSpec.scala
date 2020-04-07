@@ -30,7 +30,7 @@ class KafkaProducerIOSpec extends SyncIntegrationSpec with EmbeddedKafka with Be
       "listing partitionsFor a topic" in {
         val topic: TopicDefinitionDetails = randomTopic
 
-        withProducer[IO, Seq[PartitionInfo]](_.partitionsFor(topic.name)).map { partitions =>
+        withProducerIO[IO, Seq[PartitionInfo]](_.partitionsFor(topic.name)).map { partitions =>
           partitions.head.topic mustBe topic.name
           partitions.head.partition mustBe 0
           partitions.head.replicas.length mustBe 1
@@ -45,7 +45,7 @@ class KafkaProducerIOSpec extends SyncIntegrationSpec with EmbeddedKafka with Be
         val myKey                         = "some-key"
         val myValue                       = "some-value"
 
-        withProducer[IO, RecordMetadata](_.forTopic[String](topic.name).send(myKey, myValue)).map {
+        withProducerIO[IO, RecordMetadata](_.forTopic[String](topic.name).send(myKey, myValue)).map {
           record =>
             record.topic mustBe topic.name
             record.offset mustBe 0
