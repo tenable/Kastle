@@ -92,7 +92,7 @@ object GeneralKafkaHelpers {
       .use(fillTopic[F, K, V](_, topicName, messages))
   }
 
-  def withProducer[F[_]: Concurrent: ContextShift, B](
+  def withProducerIO[F[_]: Concurrent: ContextShift, B](
       f: KafkaProducerIO[F, String, String] => F[B]
   )(implicit C: EmbeddedKafkaConfig): F[B] = {
     val config = KafkaProducerConfig(

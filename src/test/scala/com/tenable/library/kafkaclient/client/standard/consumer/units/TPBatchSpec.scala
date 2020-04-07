@@ -2,7 +2,11 @@ package com.tenable.library.kafkaclient.client.standard.consumer.units
 
 import cats.data.NonEmptyList
 import com.github.ghik.silencer.silent
-import com.tenable.library.kafkaclient.client.standard.consumer.{BatchContext, GOffsets, KafkaUnitTestUtils}
+import com.tenable.library.kafkaclient.client.standard.consumer.{
+  BatchContext,
+  GOffsets,
+  KafkaUnitTestUtils
+}
 import org.apache.kafka.clients.consumer.{ConsumerRecord, ConsumerRecords}
 import org.apache.kafka.common.TopicPartition
 

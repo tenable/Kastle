@@ -104,8 +104,8 @@ class KafkaProcessableSpec extends AnyFlatSpec with Matchers {
     val res = KafkaProcessable
       .run[StateT[IO, ArrayBuffer[String], ?], String, String, TestRecord](batch, {
         case (g, _) =>
-          StateT.apply[IO, ArrayBuffer[String], BatchContext](
-            s => IO.pure((s.+=(g.consumerRecord.value()), BatchContext.empty))
+          StateT.apply[IO, ArrayBuffer[String], BatchContext](s =>
+            IO.pure((s.+=(g.consumerRecord.value()), BatchContext.empty))
           )
       })
       .run(ArrayBuffer.empty)

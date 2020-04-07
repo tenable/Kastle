@@ -10,6 +10,8 @@ object Dependencies {
   lazy val kafka        = "org.apache.kafka" % "kafka-clients" % "2.4.1" exclude ("org.slf4j", "slf4j-log4j12")
   lazy val kafkaRelated = Seq(kafka)
 
+  lazy val embeddedKafka = "io.github.embeddedkafka" %% "embedded-kafka" % "2.4.1"
+
   lazy val catsCore = "org.typelevel" %% "cats-core" % catsVersion
   lazy val catsFree = "org.typelevel" %% "cats-free" % catsVersion
 
