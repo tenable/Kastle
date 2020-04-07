@@ -11,6 +11,7 @@ import com.tenable.library.kafkaclient.config.TopicDefinitionDetails
 import org.apache.kafka.clients.admin._
 import org.apache.kafka.clients.consumer.OffsetAndMetadata
 import org.apache.kafka.common.TopicPartition
+import org.apache.kafka.common.config.ConfigResource
 import org.apache.kafka.common.security.token.delegation.DelegationToken
 
 import scala.collection.JavaConverters._
@@ -32,6 +33,7 @@ trait KafkaAdminIO[F[_]] {
   def listConsumerGroups(): F[List[ConsumerGroupListing]]
   def listConsumerGroupOffsets(groupId: String): F[Map[TopicPartition, OffsetAndMetadata]]
   def deleteConsumerGroups(groupIds: List[String]): F[Unit]
+  def describeConfigsForTopic(resourceNames: List[String]): F[Map[String, Map[String, String]]]
   def close(): F[Unit]
   def close(timeout: Duration): F[Unit]
 
@@ -40,7 +42,6 @@ trait KafkaAdminIO[F[_]] {
   //def describeAcls()
   //def createAcls()
   //def deleteAcls()
-  //def describeConfigs()
   //def alterConfigs()
   //def alterReplicaLogDirs()
   //def describeLogDirs()
@@ -131,7 +132,10 @@ object KafkaAdminIO {
       override def createTopics(topicDefinitions: Set[TopicDefinitionDetails]): F[Unit] =
         CS.evalOn(blockingEC) {
           val topics = topicDefinitions
-            .map(td => new NewTopic(td.name, td.partitions, td.replicationFactor))
+            .map(td =>
+              new NewTopic(td.name, td.partitions, td.replicationFactor)
+                .configs(mapAsJavaMap(td.properties))
+            )
             .asJava
 
           F.delay(admin.createTopics(topics).all.get(timeout.toMillis, TimeUnit.MILLISECONDS))
@@ -252,6 +256,33 @@ object KafkaAdminIO {
               admin.deleteConsumerGroups(groups).all.get(timeout.toMillis, TimeUnit.MILLISECONDS)
             )
             .map(_ => ())
+        }
+
+      override def describeConfigsForTopic(
+          resourceNames: List[String]
+      ): F[Map[String, Map[String, String]]] =
+        CS.evalOn(blockingEC) {
+          val configResources = resourceNames
+            .map(new ConfigResource(ConfigResource.Type.TOPIC, _))
+            .asJava
+
+          F.delay(
+              admin
+                .describeConfigs(configResources)
+                .all
+                .get(timeout.toMillis, TimeUnit.MILLISECONDS)
+            )
+            .map(_.asScala.map {
+              case (configResource, config) =>
+                (
+                  configResource.name,
+                  config
+                    .entries()
+                    .asScala
+                    .map(configEntry => (configEntry.name, configEntry.value))
+                    .toMap
+                )
+            }.toMap)
         }
 
       override def close(): F[Unit] =
