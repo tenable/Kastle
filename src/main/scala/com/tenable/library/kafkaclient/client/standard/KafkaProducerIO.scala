@@ -92,6 +92,12 @@ trait KafkaProducerIO[F[_], K, V] { self =>
         v: V,
         decorate: ProducerRecord[K, V] => ProducerRecord[K, V]
     ): F[RecordMetadata] = self.send(topicName, k, v, decorate)
+    def sendMany(keyValues: List[(K, V)]): F[List[RecordMetadata]] =
+      self.sendMany(topicName, keyValues)
+    def sendMany(
+        keyValues: List[(K, V)],
+        decorate: ProducerRecord[K, V] => ProducerRecord[K, V]
+    ): F[List[RecordMetadata]] = self.sendMany(topicName, keyValues, decorate)
   }
 
   def forTopic[T](topicName: String): ForTopic[T] = new ForTopic[T](topicName)
