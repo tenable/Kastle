@@ -7,7 +7,7 @@ object Dependencies {
 
   // Javax excluded and added specifially to avoid https://github.com/sbt/sbt/issues/3618
   // included explicitly to let us deal with vulns
-  lazy val kafka        = "org.apache.kafka" % "kafka-clients" % "2.4.1" exclude ("org.slf4j", "slf4j-log4j12")
+  lazy val kafka        = "org.apache.kafka" % "kafka-clients" % "2.5.0" exclude ("org.slf4j", "slf4j-log4j12")
   lazy val kafkaRelated = Seq(kafka)
 
   lazy val embeddedKafka = "io.github.embeddedkafka" %% "embedded-kafka" % "2.5.0"
