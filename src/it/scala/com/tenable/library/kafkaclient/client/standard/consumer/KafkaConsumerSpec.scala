@@ -5,7 +5,6 @@ import java.util
 import java.util.UUID
 import java.util.concurrent.ConcurrentLinkedQueue
 
-import cats.syntax.apply._
 import com.tenable.library.kafkaclient.client.standard.consumer.actions.ProcessAction
 import com.tenable.library.kafkaclient.config.KafkaConsumerConfig
 import com.tenable.library.kafkaclient.testhelpers.AsyncIntegrationSpec
