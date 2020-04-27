@@ -2,16 +2,16 @@ import sbt._
 
 object Dependencies {
   lazy val catsVersion = "2.1.1"
-  lazy val kafkaClientsVersion = "2.5.0"
+  lazy val kafkaVersion = "2.5.0"
 
   lazy val slf4jApi = "org.slf4j" % "slf4j-api" % "1.7.30" exclude ("org.slf4j", "slf4j-log4j12")
 
   // Javax excluded and added specifially to avoid https://github.com/sbt/sbt/issues/3618
   // included explicitly to let us deal with vulns
-  lazy val kafka        = "org.apache.kafka" % "kafka-clients" % kafkaClientsVersion exclude ("org.slf4j", "slf4j-log4j12")
+  lazy val kafka        = "org.apache.kafka" % "kafka-clients" % kafkaVersion exclude ("org.slf4j", "slf4j-log4j12")
   lazy val kafkaRelated = Seq(kafka)
 
-  lazy val embeddedKafka = "io.github.embeddedkafka" %% "embedded-kafka" % kafkaClientsVersion
+  lazy val embeddedKafka = "io.github.embeddedkafka" %% "embedded-kafka" % kafkaVersion
 
   lazy val catsCore = "org.typelevel" %% "cats-core" % catsVersion
   lazy val catsFree = "org.typelevel" %% "cats-free" % catsVersion
