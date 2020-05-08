@@ -43,6 +43,64 @@ consumerResource.use { consumer =>
 }
 ```
 
+### Using external storage for offsets
+
+If you wish to store your offsets in an external storage like a DB, you can do so by:
+
+```scala
+import cats.effect.IO
+import scala.concurrent.ExecutionContext.global
+import com.tenable.library.kafkaclient.config.KafkaConsumerConfig
+import com.tenable.library.kafkaclient.client.standard.consumer.actions.ProcessAction
+import com.tenable.library.kafkaclient.client.standard.consumer.ExternalOffsetsRebalanceListener
+import com.tenable.library.kafkaclient.client.standard.KafkaConsumerIO
+import scala.concurrent.duration._
+import org.apache.kafka.common.serialization.StringDeserializer
+
+implicit val T = IO.timer(global)
+implicit val CS = IO.contextShift(global)
+implicit val CE = IO.ioConcurrentEffect(CS)
+
+val kafkaConnectionString: String = "127.0.0.1:9"
+val topics = Set("prefix.priv.service.thetopic.1")
+val consumerGroup = "prefix.group.1"
+
+val config = KafkaConsumerConfig(kafkaConnectionString, topics, consumerGroup, 10.seconds)
+
+val yourFunctionToRetrieveOffsets: Set[TopicPartition] => Map[TopicPartition, Option[Long]] = {
+  //In here use your custom code to retrieve the offsets from where you are storing them. E.g.: DB
+  ???
+}
+
+val consumerResource = KafkaConsumerIO
+  .builder[IO, String, String](config)
+  .withKeyDeserializer(new StringDeserializer)
+  .withValueDeserializer(new StringDeserializer)
+  .rebalanceListener(new ExternalOffsetRebalanceListener[IO](yourFunctionToRetrieveOffsets))
+  .resource
+
+consumerResource.use { consumer =>
+    //Use the consumer with all the methods provided
+    //consumer.poll()
+    //consumer.pause()
+    //consumer.commit(...)
+    ???
+}
+```
+
+If using the commodity explained below to poll forever, commiting after a successful processing will have no real effect as the commit stored will be ignored in favor of the function `yourFunctionToRetrieveOffsets` will be used instead.
+
+It's important to remember that as part of the processing of the event you must make sure to persist your offsets.
+
+The main use case for this feature is if you wish to store the offsets alongside your data in the same transaction. In certain cases this approach will get you close to exactly once delivery semantics. 
+
+The same event may be processed twice on rebalance situations, so you need to handle this scenario as well. A common flow would be:
+
+- Open transaction
+- Update the data on the DB with the information in the event
+- Update the latest offset only if the current stored offset is equal to the offset on the event.
+- If any offset record was updated, you can commit the transaction, fail the transaction and rollback otherwise.
+
 ### Setting up kafka consumers to poll forever
 
 KafkaRunLoop.Builder, offers several customizations available:
@@ -55,8 +113,6 @@ KafkaRunLoop.Builder, offers several customizations available:
 - `expectingEither`: Handy shortcut. This will allow you to have your processing function to return Either[E, Unit], if Right it will commit, if left it will reject.
 - `expectingTry`: Handy shortcut. This will allow you to have your processing function to return Try[Unit]
 - `expectingProcessAction`: Handy shortcut. This will allow you to have your processing function to return ProcessAction. Which is the most flexible included return type
-
-- `withRebalanceDetector`: If set and a rebalance occurs while your *cancelable* processing function runs, it will cancel it. Might be handy for long running processing functions.
 
 At least a `consumingXXX` and a `expectingXXX` functions must be called before calling the function run.
 
@@ -145,3 +201,4 @@ consumerResource.use { consumer =>
     }
 }
 ```
+
