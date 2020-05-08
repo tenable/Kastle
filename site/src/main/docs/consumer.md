@@ -67,7 +67,7 @@ val consumerGroup = "prefix.group.1"
 
 val config = KafkaConsumerConfig(kafkaConnectionString, topics, consumerGroup, 10.seconds)
 
-val yourFunctionToRetrieveOffsets: Set[TopicPartition] => Map[TopicPartition, Option[Long]] = {
+val yourFunctionToRetrieveOffsets: Set[TopicPartition] => IO[Map[TopicPartition, Option[Long]]] = {
   //In here use your custom code to retrieve the offsets from where you are storing them. E.g.: DB
   ???
 }
