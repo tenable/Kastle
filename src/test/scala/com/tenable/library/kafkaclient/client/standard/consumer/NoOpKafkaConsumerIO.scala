@@ -4,7 +4,6 @@ import java.{util => ju}
 
 import cats.Monad
 import com.tenable.library.kafkaclient.client.standard.KafkaConsumerIO
-import com.tenable.library.kafkaclient.client.standard.consumer.rebalance.PartitionsRevoked
 import org.apache.kafka.clients.consumer.{ConsumerRecord, ConsumerRecords, OffsetAndMetadata}
 import org.apache.kafka.common.{PartitionInfo, TopicPartition}
 import cats.syntax.functor._
@@ -37,7 +36,6 @@ class NoOpKafkaConsumerIO[F[_]: Monad] extends KafkaConsumerIO[F, Nothing, Nothi
   override def seek(topicPartition: TopicPartition, offset: Long): F[Unit]           = F.unit
   override def seekToEnd(topicPartitions: List[TopicPartition]): F[Unit]             = F.unit
   override def seekToBeginning(topicPartitions: List[TopicPartition]): F[Unit]       = F.unit
-  override def partitionsRevoked(): F[PartitionsRevoked]                             = emptyPartitionsRevoked
   override def restartOnError(error: Throwable): F[Unit]                             = F.unit
   override def committed(topicPartition: TopicPartition): F[OffsetAndMetadata] =
     emptyOffsetAndMetadata
@@ -58,5 +56,4 @@ class NoOpKafkaConsumerIO[F[_]: Monad] extends KafkaConsumerIO[F, Nothing, Nothi
 
   private val long                   = F.pure(Long.MinValue)
   private val emptyOffsetAndMetadata = long.map(new OffsetAndMetadata(_))
-  private val emptyPartitionsRevoked = F.pure(PartitionsRevoked(Set.empty[TopicPartition]))
 }

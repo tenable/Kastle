@@ -72,7 +72,8 @@ class KafkaAdminIOSpec extends SyncIntegrationSpec with EmbeddedKafka with Befor
       }
 
       "create a topic with additional config" in {
-        val topic = randomTopic.copy(properties = Map("cleanup.policy" -> "compact", "retention.ms" -> "-1"))
+        val topic =
+          randomTopic.copy(properties = Map("cleanup.policy" -> "compact", "retention.ms" -> "-1"))
 
         val task = withAdmin { admin: KafkaAdminIO[IO] =>
           cleanupTopicsAfter(admin) {
@@ -121,7 +122,7 @@ class KafkaAdminIOSpec extends SyncIntegrationSpec with EmbeddedKafka with Befor
 
         val task = withAdmin { admin: KafkaAdminIO[IO] =>
           cleanupTopicsAfter(admin) {
-            constructConsumer[IO](topics, _.copy(groupId = groupId)).use {
+            constructConsumer[IO](topics, configMutations = _.copy(groupId = groupId)).use {
               consumer: KafkaConsumerIO[IO, String, String] =>
                 for {
                   _              <- consumer.poll(1.seconds)(identity)
@@ -144,7 +145,7 @@ class KafkaAdminIOSpec extends SyncIntegrationSpec with EmbeddedKafka with Befor
 
         val task = withAdmin { admin: KafkaAdminIO[IO] =>
           cleanupTopicsAfter(admin) {
-            constructConsumer[IO](topics, _.copy(groupId = groupId)).use {
+            constructConsumer[IO](topics, configMutations = _.copy(groupId = groupId)).use {
               consumer: KafkaConsumerIO[IO, String, String] =>
                 for {
                   _              <- consumer.poll(1.seconds)(identity)
@@ -170,7 +171,7 @@ class KafkaAdminIOSpec extends SyncIntegrationSpec with EmbeddedKafka with Befor
 
         val task = withAdmin { admin: KafkaAdminIO[IO] =>
           cleanupTopicsAfter(admin) {
-            constructConsumer[IO](topics, _.copy(groupId = groupId)).use {
+            constructConsumer[IO](topics, configMutations = _.copy(groupId = groupId)).use {
               consumer: KafkaConsumerIO[IO, String, String] =>
                 withProducerIO { producer: KafkaProducerIO[IO, String, String] =>
                   for {
@@ -202,7 +203,7 @@ class KafkaAdminIOSpec extends SyncIntegrationSpec with EmbeddedKafka with Befor
 
         val task = withAdmin { admin: KafkaAdminIO[IO] =>
           cleanupTopicsAfter(admin) {
-            constructConsumer[IO](topics, _.copy(groupId = groupId)).use {
+            constructConsumer[IO](topics, configMutations = _.copy(groupId = groupId)).use {
               consumer: KafkaConsumerIO[IO, String, String] =>
                 withProducerIO { producer: KafkaProducerIO[IO, String, String] =>
                   for {
