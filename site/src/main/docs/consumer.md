@@ -88,7 +88,7 @@ consumerResource.use { consumer =>
 }
 ```
 
-If using the commodity explained below to poll forever, commiting after a successful processing will have no real effect as the commit stored will be ignored in favor of the function `yourFunctionToRetrieveOffsets` will be used instead.
+If using the convenient method `pollForever` explained below to poll forever, commiting after a successful processing will have no real effect as the commit stored will be ignored in favor of the function `yourFunctionToRetrieveOffsets` that will be used instead.
 
 It's important to remember that as part of the processing of the event you must make sure to persist your offsets.
 
