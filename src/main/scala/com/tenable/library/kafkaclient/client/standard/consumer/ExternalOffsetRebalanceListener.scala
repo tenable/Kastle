@@ -10,9 +10,7 @@ import com.github.ghik.silencer.silent
 import scala.collection.JavaConverters._
 import cats.effect.ConcurrentEffect
 
-@silent(
-  "Silencing warning to use scala.jdk.Converters._ instead of scala.collection.JavaConverters._"
-)
+@silent
 class ExternalOffsetRebalanceListener[F[_]: ConcurrentEffect](
     consumer: KafkaConsumer[_, _],
     findOffsets: Set[TopicPartition] => F[Map[TopicPartition, Option[Long]]]
