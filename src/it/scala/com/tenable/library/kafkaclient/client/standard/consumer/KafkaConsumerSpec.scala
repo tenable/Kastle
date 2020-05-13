@@ -28,6 +28,8 @@ import scala.concurrent.ExecutionContext.global
 import com.tenable.library.kafkaclient.config.TopicDefinitionDetails
 import net.manub.embeddedkafka.EmbeddedKafka
 import org.scalatest.BeforeAndAfterAll
+import org.apache.kafka.clients.consumer.KafkaConsumer
+import java.util.concurrent.ConcurrentHashMap
 
 class TestPartitioner2Partitions extends Partitioner {
   override def partition(
@@ -135,7 +137,7 @@ class KafkaConsumerSpec extends AsyncIntegrationSpec with EmbeddedKafka with Bef
             }
           }
 
-          withMyKafkaConsumer(topicKeys.keySet, configInBatchesOf5)(processEvent) {
+          withMyKafkaConsumer(topicKeys.keySet, configMutations = configInBatchesOf5)(processEvent) {
             IO.pure {
               eventually {
                 rejectedQueue.size mustBe 2
@@ -237,6 +239,48 @@ class KafkaConsumerSpec extends AsyncIntegrationSpec with EmbeddedKafka with Bef
 
         }.unsafeToFuture()
       }
+
+      "should work using externally stored offsets" in {
+        val keys      = (1 to 1000).map(_.toString)
+        val topicKeys = Map(randomTopic -> keys)
+
+        withMessages(topicKeys) {
+          val receiveQueue  = new ConcurrentLinkedQueue[String]()
+          val failedQueue   = new ConcurrentLinkedQueue[String]()
+          val concurrentMap = new ConcurrentHashMap[TopicPartition, Long]()
+          def findOffsets(tps: Set[TopicPartition]): IO[Map[TopicPartition, Option[Long]]] = {
+            IO.pure(tps.map(tp => (tp, Option(concurrentMap.get(tp)))).toMap)
+          }
+          val processEvent: ConsumerRecord[String, String] => IO[ProcessAction] = { entry =>
+            if (entry.key() == "80" && failedQueue.isEmpty) {
+              failedQueue.offer(entry.key())
+              IO.raiseError(new Exception("Ops"))
+            } else {
+              concurrentMap.put(
+                new TopicPartition(entry.topic(), entry.partition()),
+                entry.offset()
+              )
+              receiveQueue.offer(entry.key())
+              IO.pure(ProcessAction.doNothing)
+            }
+          }
+
+          withMyKafkaConsumer(
+            topicKeys.keySet,
+            rebalanceListener = Some(ExternalOffsetRebalanceListener(findOffsets)(_))
+          )(processEvent) {
+            Thread.sleep(10.seconds.toMillis)
+            IO.pure {
+              eventually {
+                failedQueue.size mustBe 1
+                failedQueue.asScala.toList.head mustBe "80"
+                receiveQueue.size mustBe keys.size
+                ensurePartitionsOrderingExpected(receiveQueue, keys)
+              }
+            }
+          }
+        }.unsafeToFuture()
+      }
     }
 
     "consumeInTopicPartitionBatches" when {
@@ -252,7 +296,9 @@ class KafkaConsumerSpec extends AsyncIntegrationSpec with EmbeddedKafka with Bef
             IO.pure(ProcessAction.commitAll)
           }
 
-          withMyKafkaConsumer[TPRecords](topicKeys.keySet, configInBatchesOf5)(processEvent) {
+          withMyKafkaConsumer[TPRecords](topicKeys.keySet, configMutations = configInBatchesOf5)(
+            processEvent
+          ) {
             IO.pure {
               eventually {
                 receiveQueue.size mustBe keys.size
@@ -281,7 +327,9 @@ class KafkaConsumerSpec extends AsyncIntegrationSpec with EmbeddedKafka with Bef
             }
           }
 
-          withMyKafkaConsumer[TPRecords](topicKeys.keySet, configInBatchesOf5)(processEvent) {
+          withMyKafkaConsumer[TPRecords](topicKeys.keySet, configMutations = configInBatchesOf5)(
+            processEvent
+          ) {
             IO.pure {
               eventually {
                 receiveQueue.size mustBe keys.size
@@ -314,7 +362,9 @@ class KafkaConsumerSpec extends AsyncIntegrationSpec with EmbeddedKafka with Bef
             }
           }
 
-          withMyKafkaConsumer[TPRecords](topicKeys.keySet, configInBatchesOf5)(processEvent) {
+          withMyKafkaConsumer[TPRecords](topicKeys.keySet, configMutations = configInBatchesOf5)(
+            processEvent
+          ) {
             IO.pure {
               eventually {
                 receiveQueue.size mustBe keys.size
@@ -345,7 +395,9 @@ class KafkaConsumerSpec extends AsyncIntegrationSpec with EmbeddedKafka with Bef
             }
           }
 
-          withMyKafkaConsumer[TPRecords](topicKeys.keySet, configInBatchesOf5)(processEvent) {
+          withMyKafkaConsumer[TPRecords](topicKeys.keySet, configMutations = configInBatchesOf5)(
+            processEvent
+          ) {
             IO.pure {
               eventually {
                 val minRejected = rejectedQueue.asScala.flatMap(_._2.toList).map(_.key().toInt).min
@@ -376,7 +428,54 @@ class KafkaConsumerSpec extends AsyncIntegrationSpec with EmbeddedKafka with Bef
             }
           }
 
-          withMyKafkaConsumer[TPRecords](topicKeys.keySet, configInBatchesOf5)(processEvent) {
+          withMyKafkaConsumer[TPRecords](topicKeys.keySet, configMutations = configInBatchesOf5)(
+            processEvent
+          ) {
+            Thread.sleep(10.seconds.toMillis)
+            IO.pure {
+              eventually {
+                failedQueue.size mustBe 1
+                failedQueue.asScala.headOption.exists(_._2.exists(_.key == "80")) mustBe true
+                receiveQueue.size mustBe keys.size
+                ensurePartitionsOrderingExpected(receiveQueue, keys)
+              }
+            }
+          }
+        }.unsafeToFuture()
+      }
+
+      "should work using externally stored offsets" in {
+        val keys      = (1 to 1000).map(_.toString)
+        val topicKeys = Map(randomTopic -> keys)
+
+        withMessages(topicKeys) {
+          val receiveQueue  = new ConcurrentLinkedQueue[String]()
+          val failedQueue   = new ConcurrentLinkedQueue[TPRecords[String, String]]()
+          val concurrentMap = new ConcurrentHashMap[TopicPartition, Long]()
+          def findOffsets(tps: Set[TopicPartition]): IO[Map[TopicPartition, Option[Long]]] = {
+            IO.pure(tps.map(tp => (tp, Option(concurrentMap.get(tp)))).toMap)
+          }
+          val processEvent: TPRecords[String, String] => IO[ProcessAction] = { entry =>
+            if (entry._2.exists(_.key() == "80") && failedQueue.isEmpty) {
+              failedQueue.offer(entry)
+              IO.raiseError(new Exception("Ops"))
+            } else {
+              concurrentMap.put(
+                entry._1,
+                entry._2.last.offset()
+              )
+              entry._2.map { item =>
+                receiveQueue.offer(item.key())
+              }
+              IO.pure(ProcessAction.doNothing)
+            }
+          }
+
+          withMyKafkaConsumer[TPRecords](
+            topicKeys.keySet,
+            rebalanceListener = Some(ExternalOffsetRebalanceListener(findOffsets)(_)),
+            configMutations = configInBatchesOf5
+          )(processEvent) {
             Thread.sleep(10.seconds.toMillis)
             IO.pure {
               eventually {
@@ -408,11 +507,12 @@ class KafkaConsumerSpec extends AsyncIntegrationSpec with EmbeddedKafka with Bef
 
   def usingMyKafkaConsumer[G[_, _]: KafkaProcessable](
       topics: Set[TopicDefinitionDetails],
+      rebalanceListener: Option[KafkaConsumer[_, _] => ExternalOffsetRebalanceListener[IO]] = None,
       configMutations: KafkaConsumerConfig => KafkaConsumerConfig = identity
   )(
       processEvent: G[String, String] => IO[ProcessAction]
   )(block: KafkaConsumerIO[IO, String, String] => IO[Assertion]): IO[Assertion] = {
-    constructConsumer[IO](topics, configMutations).use { consumer =>
+    constructConsumer[IO](topics, rebalanceListener, configMutations).use { consumer =>
       val consumerLoop = consumer.pollForever
         .consuming[G]
         .expectingProcessAction
@@ -428,9 +528,10 @@ class KafkaConsumerSpec extends AsyncIntegrationSpec with EmbeddedKafka with Bef
 
   def withMyKafkaConsumer[G[_, _]: KafkaProcessable](
       topics: Set[TopicDefinitionDetails],
+      rebalanceListener: Option[KafkaConsumer[_, _] => ExternalOffsetRebalanceListener[IO]] = None,
       configMutations: KafkaConsumerConfig => KafkaConsumerConfig = identity
   )(processEvent: G[String, String] => IO[ProcessAction])(block: => IO[Assertion]): IO[Assertion] =
-    usingMyKafkaConsumer(topics, configMutations)(processEvent)(_ => block)
+    usingMyKafkaConsumer(topics, rebalanceListener, configMutations)(processEvent)(_ => block)
 
   def withMessages[T](
       topicAndKeys: Map[TopicDefinitionDetails, Seq[String]]

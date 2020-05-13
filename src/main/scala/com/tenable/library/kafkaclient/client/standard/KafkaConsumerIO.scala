@@ -8,10 +8,6 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.effect.concurrent.MVar
 import com.github.ghik.silencer.silent
-import com.tenable.library.kafkaclient.client.standard.consumer.rebalance.{
-  PartitionsRevoked,
-  RebalanceListener
-}
 import com.tenable.library.kafkaclient.client.standard.consumer.{
   ConsumerStateHandler,
   KafkaRunLoop,
@@ -29,6 +25,7 @@ import scala.concurrent.duration._
 import com.tenable.library.kafkaclient.utils.ExecutionContexts
 import com.tenable.library.kafkaclient.utils.Converters.JavaDurationOps
 import com.tenable.library.kafkaclient.config.KafkaConsumerConfig
+import org.apache.kafka.clients.consumer.internals.NoOpConsumerRebalanceListener
 
 @silent
 trait KafkaConsumerIO[F[_], K, V] {
@@ -57,7 +54,6 @@ trait KafkaConsumerIO[F[_], K, V] {
   def seekToEnd(topicPartitions: List[TopicPartition]): F[Unit]
   def seekToBeginning(topicPartitions: List[TopicPartition]): F[Unit]
   def seekWithError(offsets: Map[TopicPartition, Long], error: Option[String]): F[Unit]
-  def partitionsRevoked(): F[PartitionsRevoked]
   def restartOnError(error: Throwable): F[Unit]
 }
 
@@ -75,7 +71,8 @@ object KafkaConsumerIO {
       keyDeserializer: Option[Deserializer[K]],
       valueDeserializer: Option[Deserializer[V]],
       blockingEC: Option[Resource[F, ExecutionContext]],
-      doCancelOnRebalance: Boolean
+      rebalanceListener: KafkaConsumer[K, V] => ConsumerRebalanceListener =
+        (_: KafkaConsumer[K, V]) => new NoOpConsumerRebalanceListener
   ) {
     type OngoingBuilder[TT <: BuilderState] = Builder[TT, F, K, V]
 
@@ -87,7 +84,7 @@ object KafkaConsumerIO {
         Some(keyDeserializer),
         valueDeserializer,
         blockingEC,
-        doCancelOnRebalance
+        rebalanceListener
       )
 
     def withValueDeserializer(
@@ -98,7 +95,7 @@ object KafkaConsumerIO {
         keyDeserializer,
         Some(valueDeserializer),
         blockingEC,
-        doCancelOnRebalance
+        rebalanceListener
       )
 
     def withBlockingEC(blockingEC: Resource[F, ExecutionContext]): OngoingBuilder[T] =
@@ -107,16 +104,17 @@ object KafkaConsumerIO {
         keyDeserializer,
         valueDeserializer,
         Some(blockingEC),
-        doCancelOnRebalance
+        rebalanceListener
       )
 
-    def cancelOnRebalance(flag: Boolean = true): OngoingBuilder[T] = new Builder[T, F, K, V](
-      config,
-      keyDeserializer,
-      valueDeserializer,
-      blockingEC,
-      flag
-    )
+    def rebalanceListener(l: KafkaConsumer[K, V] => ConsumerRebalanceListener): OngoingBuilder[T] =
+      new Builder[T, F, K, V](
+        config,
+        keyDeserializer,
+        valueDeserializer,
+        blockingEC,
+        l
+      )
 
     def resource(implicit ev: Initialized =:= T): Resource[F, KafkaConsumerIO[F, K, V]] = {
       val _ = ev //shutup compiler
@@ -125,7 +123,7 @@ object KafkaConsumerIO {
         keyDeserializer.get,
         valueDeserializer.get,
         blockingEC,
-        doCancelOnRebalance
+        rebalanceListener
       )
     }
   }
@@ -133,14 +131,14 @@ object KafkaConsumerIO {
   def builder[F[_]: ConcurrentEffect: ContextShift: Timer, K, V](
       config: KafkaConsumerConfig
   ): Builder[CreatedEmpty, F, K, V] =
-    new Builder[CreatedEmpty, F, K, V](config, None, None, None, false)
+    new Builder[CreatedEmpty, F, K, V](config, None, None, None)
 
   private def resource[F[_]: ConcurrentEffect: ContextShift: Timer, K, V](
       config: KafkaConsumerConfig,
       keyDeserializer: Deserializer[K],
       valueDeserializer: Deserializer[V],
       optionalBlockingEC: Option[Resource[F, ExecutionContext]],
-      cancelOnRebalance: Boolean
+      rebalanceListener: KafkaConsumer[K, V] => ConsumerRebalanceListener
   ): Resource[F, KafkaConsumerIO[F, K, V]] =
     for {
       ec <- optionalBlockingEC.getOrElse(ExecutionContexts.io(s"kafka-consumer"))
@@ -150,7 +148,7 @@ object KafkaConsumerIO {
                      keyDeserializer,
                      valueDeserializer,
                      ec,
-                     cancelOnRebalance
+                     rebalanceListener
                    )
                  )(
                    _.close()
@@ -163,12 +161,12 @@ object KafkaConsumerIO {
       keyDeserializer: Deserializer[K],
       valueDeserializer: Deserializer[V],
       blockingEC: ExecutionContext,
-      cancelOnRebalance: Boolean
+      rebalanceListener: KafkaConsumer[K, V] => ConsumerRebalanceListener
   ): F[KafkaConsumerIO[F, K, V]] = {
     implicit val logger: Logger =
       LoggerFactory.getLogger(s"kafka-io-${config.clientId}".replace('.', '-'))
 
-    val consumerBuilder: MVar[F, PartitionsRevoked] => KafkaConsumer[K, V] = { rebalanceMVar =>
+    val consumerBuilder: () => KafkaConsumer[K, V] = { () =>
       val c =
         new KafkaConsumer[K, V](
           config.properties,
@@ -176,11 +174,7 @@ object KafkaConsumerIO {
           valueDeserializer
         )
       val subscribedTopics = config.topics.asJava
-      if (cancelOnRebalance) {
-        c.subscribe(subscribedTopics, new RebalanceListener[F](config.clientId, rebalanceMVar))
-      } else {
-        c.subscribe(subscribedTopics)
-      }
+      c.subscribe(subscribedTopics, rebalanceListener(c))
       c
     }
 
@@ -406,12 +400,6 @@ object KafkaConsumerIO {
           (state, ())
         }
       }
-
-    override def partitionsRevoked(): F[PartitionsRevoked] =
-      stateHandler
-        .withConsumer("get-partitions-revoked-deferred") { state =>
-          state.rebalanceMVar.read.map((state, _))
-        }
 
     def restartOnError(error: Throwable): F[Unit] =
       stateHandler.restartOnError(error)

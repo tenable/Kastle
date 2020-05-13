@@ -9,7 +9,6 @@ import cats.syntax.apply._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import com.github.ghik.silencer.silent
-import com.tenable.library.kafkaclient.client.standard.consumer.rebalance.PartitionsRevoked
 import com.tenable.library.kafkaclient.utils.Converters.JavaDurationOps
 import org.apache.kafka.clients.consumer.{Consumer, CommitFailedException}
 import org.apache.kafka.common.TopicPartition
@@ -23,7 +22,7 @@ import scala.util.control.NonFatal
 private[standard] class ConsumerStateHandler[F[_]: ConcurrentEffect: ContextShift: Timer, K, V](
     val clientId: String,
     keepAliveInterval: FiniteDuration,
-    builder: MVar[F, PartitionsRevoked] => Consumer[K, V],
+    builder: () => Consumer[K, V],
     mVarConsumer: MVar[F, State[F, K, V]],
     blockingEC: ExecutionContext
 )(implicit logger: Logger) {
@@ -56,17 +55,16 @@ private[standard] class ConsumerStateHandler[F[_]: ConcurrentEffect: ContextShif
   @silent
   def unsafeStart(pausedTopics: Set[String]): F[Unit] =
     for {
-      _   <- F.delay(logger.info(s"Starting consumer $clientId"))
-      ref <- MVar.empty[F, PartitionsRevoked]
+      _ <- F.delay(logger.info(s"Starting consumer $clientId"))
       newC = {
-        val newC = builder(ref)
+        val newC = builder()
         val tps =
           newC.assignment().asScala.filter(tp => pausedTopics.exists(t => t == tp.topic()))
         newC.pause(tps.asJava)
         newC
       }
       cancelKA <- runKeepAlive(keepAliveInterval)
-      _        <- mVarConsumer.put(State(newC, Map.empty, pausedTopics, cancelKA, ref))
+      _        <- mVarConsumer.put(State(newC, Map.empty, pausedTopics, cancelKA))
       _        <- F.delay(logger.info(s"Started new consumer $clientId"))
     } yield ()
 
@@ -178,6 +176,5 @@ case class State[F[_], K, V](
     pausedTP: Map[TopicPartition, PausedTemporarily],
     pausedT: Set[String],
     keepAliveCancel: CancelToken[F],
-    rebalanceMVar: MVar[F, PartitionsRevoked],
     isClosed: Boolean = false
 )

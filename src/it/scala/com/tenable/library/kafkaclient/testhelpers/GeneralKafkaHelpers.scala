@@ -24,6 +24,9 @@ import org.slf4j.LoggerFactory
 import scala.concurrent.duration._
 import scala.util.Random
 import net.manub.embeddedkafka.EmbeddedKafkaConfig
+import com.tenable.library.kafkaclient.client.standard.consumer.ExternalOffsetRebalanceListener
+import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.clients.consumer.internals.NoOpConsumerRebalanceListener
 
 object GeneralKafkaHelpers {
   lazy val defaultKeySerde   = new StringSerde()
@@ -278,13 +281,18 @@ object GeneralKafkaHelpers {
 
   def constructConsumer[F[_]: ConcurrentEffect: ContextShift: Timer](
       topics: Set[TopicDefinitionDetails],
+      rebalanceListener: Option[KafkaConsumer[_, _] => ExternalOffsetRebalanceListener[F]] = None,
       configMutations: KafkaConsumerConfig => KafkaConsumerConfig = identity
-  )(implicit C: EmbeddedKafkaConfig): Resource[F, KafkaConsumerIO[F, String, String]] =
+  )(implicit C: EmbeddedKafkaConfig): Resource[F, KafkaConsumerIO[F, String, String]] = {
     KafkaConsumerIO
       .builder(configMutations(constructConsumerConfig(topics, 10.seconds)))
       .withKeyDeserializer(defaultKeySerde.deserializer())
       .withValueDeserializer(defaultValueSerde.deserializer())
+      .rebalanceListener(
+        rebalanceListener.getOrElse((_: KafkaConsumer[_, _]) => new NoOpConsumerRebalanceListener)
+      )
       .resource
+  }
 
   def constructProducer[F[_]: Concurrent: ContextShift](
       partitioner: Class[_ <: Partitioner]

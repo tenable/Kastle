@@ -19,6 +19,7 @@ sealed trait ProcessAction
 object ProcessAction {
 
   sealed trait KafkaAction
+  case object DoNothing                                         extends KafkaAction
   case class Commit(except: Option[Set[TopicPartition]] = None) extends KafkaAction
   case class Reject(error: Option[String], pauseDetails: Option[PausedTemporarily])
       extends KafkaAction
@@ -37,6 +38,7 @@ object ProcessAction {
   def all(kafkaAction: KafkaAction): ProcessAction =
     SingleAction(kafkaAction, None)
 
+  def doNothing: ProcessAction = all(DoNothing)
   def commitAll: ProcessAction =
     all(Commit())
 
@@ -113,6 +115,7 @@ object ProcessAction {
 
     action match {
       // commit all except X
+      case SingleAction(DoNothing, _) => Monad[F].pure(BatchContext.empty)
       case SingleAction(Commit(Some(except)), None) =>
         kIO
           .commitSync(
@@ -154,14 +157,18 @@ object ProcessAction {
   implicit val postProcessActionM: Monoid[ProcessAction] =
     new Monoid[ProcessAction] {
       override def empty: ProcessAction =
-        MultiAction.empty
+        doNothing
 
       override def combine(left: ProcessAction, right: ProcessAction): ProcessAction =
         (left, right) match {
-          case (al @ SingleAction(_, _), ar @ SingleAction(_, _)) => MultiAction(List(al, ar))
-          case (MultiAction(actions), ar @ SingleAction(_, _))    => MultiAction(actions :+ ar)
-          case (al @ SingleAction(_, _), MultiAction(actions))    => MultiAction(al +: actions)
-          case (MultiAction(la), MultiAction(ra))                 => MultiAction(la ++ ra)
+          case (SingleAction(DoNothing, _), ar @ SingleAction(_, _)) => ar
+          case (al @ SingleAction(_, _), SingleAction(DoNothing, _)) => al
+          case (al @ SingleAction(_, _), ar @ SingleAction(_, _))    => MultiAction(List(al, ar))
+          case (al: MultiAction, SingleAction(DoNothing, _))         => al
+          case (MultiAction(actions), ar @ SingleAction(_, _))       => MultiAction(actions :+ ar)
+          case (SingleAction(DoNothing, _), ar: MultiAction)         => ar
+          case (al @ SingleAction(_, _), MultiAction(actions))       => MultiAction(al +: actions)
+          case (MultiAction(la), MultiAction(ra))                    => MultiAction(la ++ ra)
         }
     }
 }

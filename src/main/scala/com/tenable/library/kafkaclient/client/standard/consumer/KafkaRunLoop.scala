@@ -10,7 +10,6 @@ import com.tenable.library.kafkaclient.client.standard.consumer.units.TPBatch
 import com.tenable.library.kafkaclient.client.standard.consumer.KafkaProcessable.GAndOffsets
 import com.tenable.library.kafkaclient.client.standard.consumer.actions.ProcessAction
 import org.apache.kafka.common.KafkaException
-import org.apache.kafka.common.errors.RebalanceInProgressException
 import org.apache.kafka.clients.consumer.{ConsumerRecord, ConsumerRecords}
 import com.tenable.library.kafkaclient.client.standard.KafkaConsumerIO
 import org.slf4j.{Logger, LoggerFactory}
@@ -19,38 +18,8 @@ import scala.concurrent.duration.DurationInt
 import scala.concurrent.duration.FiniteDuration
 import scala.util.Try
 
-trait ProcessDecorator[F[_]] {
-  def runOrCancel[A](fa: F[A]): F[A]
-}
-
-object ProcessDecorator {
-  def noOp[F[_]]: ProcessDecorator[F] = new ProcessDecorator[F] {
-    def runOrCancel[A](fa: F[A]): F[A] = fa
-  }
-
-  def rebalanceDetector[F[_]: ConcurrentEffect](
-      consumer: KafkaConsumerIO[F, _, _]
-  ): ProcessDecorator[F] = {
-    val F = ConcurrentEffect[F]
-    new ProcessDecorator[F] {
-      def runOrCancel[A](fa: F[A]): F[A] = {
-        F.race(consumer.partitionsRevoked(), fa).flatMap {
-          case Left(_) =>
-            F.raiseError[A](
-              new RebalanceInProgressException(
-                "Rebalance detected, canceling underlying computation"
-              )
-            )
-          case Right(res) => F.pure(res)
-        }
-      }
-    }
-  }
-}
-
 class KafkaRunLoop[F[_]: ConcurrentEffect, K, V] private (
-    consumer: KafkaConsumerIO[F, K, V],
-    processDecorator: ProcessDecorator[F]
+    consumer: KafkaConsumerIO[F, K, V]
 )(
     implicit T: Timer[F]
 ) { self =>
@@ -66,7 +35,7 @@ class KafkaRunLoop[F[_]: ConcurrentEffect, K, V] private (
       val (g, topicOffsets) = gAndOffsets
 
       for {
-        a <- processDecorator.runOrCancel(process(g))
+        a <- process(g)
         action = EventActionable[A].asProcessAction(a)
         ctx <- ProcessAction.interpret(consumer, action, topicOffsets)
       } yield ctx
@@ -103,8 +72,7 @@ object KafkaRunLoop {
   class Builder[T <: BuilderState, F[_]: ConcurrentEffect: Timer, K, V, G[_, _], A] private[KafkaRunLoop] (
       consumer: KafkaConsumerIO[F, K, V],
       granularity: Option[KafkaProcessable[G]],
-      actionHandler: Option[EventActionable[A]],
-      processDecorator: Option[ProcessDecorator[F]]
+      actionHandler: Option[EventActionable[A]]
   ) {
     type OngoingBuilder[TT <: BuilderState, GG[_, _], AA] = Builder[TT, F, K, V, GG, AA]
 
@@ -117,8 +85,7 @@ object KafkaRunLoop {
       new Builder[T with WithGranularity, F, K, V, G1, A](
         consumer,
         Some(KafkaProcessable[G1]),
-        actionHandler,
-        processDecorator
+        actionHandler
       )
 
     def consumingSingleEvents: OngoingBuilder[T with WithGranularity, ConsumerRecord, A] =
@@ -140,8 +107,7 @@ object KafkaRunLoop {
       new Builder[T with WithActionHandler, F, K, V, G, A1](
         consumer,
         granularity,
-        Some(EventActionable[A1]),
-        processDecorator
+        Some(EventActionable[A1])
       )
 
     def expectingEither[E: Show]: OngoingBuilder[T with WithActionHandler, G, Either[E, Unit]] =
@@ -162,8 +128,7 @@ object KafkaRunLoop {
       new Builder[T, F, K, V, G, A](
         consumer,
         granularity,
-        actionHandler,
-        Some(ProcessDecorator.rebalanceDetector(consumer))
+        actionHandler
       )
 
     /**
@@ -173,7 +138,7 @@ object KafkaRunLoop {
         pollTimeout: FiniteDuration
     )(process: G[K, V] => F[A])(implicit ev: Initialized =:= T): F[CancelToken[F]] = {
       val _ = ev //shutup compiler
-      new KafkaRunLoop[F, K, V](consumer, processDecorator.getOrElse(ProcessDecorator.noOp[F]))
+      new KafkaRunLoop[F, K, V](consumer)
         .pollForever(pollTimeout, process)(granularity.get, actionHandler.get)
     }
   }
@@ -181,5 +146,5 @@ object KafkaRunLoop {
   def builder[F[_]: ConcurrentEffect: Timer, K, V](
       consumer: KafkaConsumerIO[F, K, V]
   ): Builder[CreatedEmpty, F, K, V, Nothing, Nothing] =
-    new Builder[CreatedEmpty, F, K, V, Nothing, Nothing](consumer, None, None, None)
+    new Builder[CreatedEmpty, F, K, V, Nothing, Nothing](consumer, None, None)
 }
