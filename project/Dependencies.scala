@@ -16,12 +16,12 @@ object Dependencies {
   lazy val catsCore = "org.typelevel" %% "cats-core" % catsVersion
   lazy val catsFree = "org.typelevel" %% "cats-free" % catsVersion
 
-  lazy val catsEffect = "org.typelevel" %% "cats-effect" % "2.1.3"
+  lazy val catsEffect = "org.typelevel" %% "cats-effect" % "2.1.4"
 
   lazy val simulacrum = "org.typelevel" %% "simulacrum" % "1.0.0"
 
-  lazy val scalaTest   = "org.scalatest" %% "scalatest"   % "3.2.0"
-  lazy val mockitoCore = "org.mockito"   % "mockito-core" % "3.3.3"
+  lazy val scalaTest   = "org.scalatest" %% "scalatest"   % "3.1.2"
+  lazy val mockitoCore = "org.mockito"   % "mockito-core" % "3.4.0"
 
   private val logbackVersion = "1.2.3"
   lazy val logbackClass      = "ch.qos.logback" % "logback-core" % logbackVersion
