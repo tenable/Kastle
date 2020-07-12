@@ -16,7 +16,7 @@ object Dependencies {
   lazy val catsCore = "org.typelevel" %% "cats-core" % catsVersion
   lazy val catsFree = "org.typelevel" %% "cats-free" % catsVersion
 
-  lazy val catsEffect = "org.typelevel" %% "cats-effect" % "2.1.3"
+  lazy val catsEffect = "org.typelevel" %% "cats-effect" % "2.1.4"
 
   lazy val simulacrum = "org.typelevel" %% "simulacrum" % "1.0.0"
 
