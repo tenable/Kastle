@@ -8,7 +8,6 @@ import com.github.ghik.silencer.silent
 import com.tenable.library.kafkaclient.client.standard.consumer.KafkaUnitTestUtils.buildRecords
 import org.apache.kafka.clients.consumer._
 import org.apache.kafka.common.TopicPartition
-import org.scalatest._
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
