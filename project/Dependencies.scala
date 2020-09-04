@@ -1,7 +1,7 @@
 import sbt._
 
 object Dependencies {
-  lazy val catsVersion = "2.1.1"
+  lazy val catsVersion = "2.2.0"
   lazy val kafkaVersion = "2.5.0"
 
   lazy val slf4jApi = "org.slf4j" % "slf4j-api" % "1.7.30" exclude ("org.slf4j", "slf4j-log4j12")
