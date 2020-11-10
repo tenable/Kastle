@@ -133,7 +133,7 @@ private[standard] class ConsumerStateHandler[F[_]: ConcurrentEffect: ContextShif
     F.start {
       F.cancelable[Unit] { _ =>
         val fiberF = F.start(keepAliveF.foreverM[Unit])
-        val fiber  = F.toIO(fiberF).unsafeRunSync
+        val fiber  = F.toIO(fiberF).unsafeRunSync()
 
         for {
           _ <- F.delay(logger.info("Cancelling keep-alive"))
