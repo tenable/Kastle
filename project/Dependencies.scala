@@ -18,17 +18,17 @@ object Dependencies {
 
   lazy val catsEffect = "org.typelevel" %% "cats-effect" % "2.1.4"
 
-  lazy val simulacrum = "org.typelevel" %% "simulacrum" % "1.0.0"
+  lazy val simulacrum = "org.typelevel" %% "simulacrum" % "1.0.1"
 
-  lazy val scalaTest   = "org.scalatest" %% "scalatest"   % "3.2.0"
-  lazy val mockitoCore = "org.mockito"   % "mockito-core" % "3.4.6"
+  lazy val scalaTest   = "org.scalatest" %% "scalatest"   % "3.2.3"
+  lazy val mockitoCore = "org.mockito"   % "mockito-core" % "3.4.4"
 
   private val logbackVersion = "1.2.3"
   lazy val logbackClass      = "ch.qos.logback" % "logback-core" % logbackVersion
   lazy val logbackClassic    = "ch.qos.logback" % "logback-classic" % logbackVersion
   lazy val logbackRelated    = Seq(logbackClass, logbackClassic)
 
-  lazy val silencerVersion = "1.6.0"
+  lazy val silencerVersion = "1.7.1"
   lazy val silencerPlugin  = "com.github.ghik" % "silencer-plugin" % silencerVersion cross CrossVersion.full
   lazy val kindProjector   = "org.typelevel" % "kind-projector" % "0.11.0" cross CrossVersion.full
 
