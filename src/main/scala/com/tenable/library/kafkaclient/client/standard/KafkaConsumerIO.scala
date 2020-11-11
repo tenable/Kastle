@@ -6,7 +6,7 @@ import cats.effect._
 import cats.syntax.apply._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import cats.effect.concurrent.MVar
+import cats.effect.concurrent.{MVar, MVar2}
 import com.github.ghik.silencer.silent
 import com.tenable.library.kafkaclient.client.standard.consumer.{
   ConsumerStateHandler,
@@ -178,7 +178,7 @@ object KafkaConsumerIO {
       c
     }
 
-    val consumerStateHandler: MVar[F, State[F, K, V]] => ConsumerStateHandler[F, K, V] =
+    val consumerStateHandler: MVar2[F, State[F, K, V]] => ConsumerStateHandler[F, K, V] =
       new ConsumerStateHandler[F, K, V](
         config.clientId,
         config.fakePollInterval,

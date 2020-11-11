@@ -1,7 +1,8 @@
 import sbt._
 
 object Dependencies {
-  lazy val catsVersion = "2.1.1"
+
+  lazy val catsVersion = "2.2.0"
   lazy val kafkaVersion = "2.6.0"
 
   lazy val slf4jApi = "org.slf4j" % "slf4j-api" % "1.7.30" exclude ("org.slf4j", "slf4j-log4j12")
@@ -16,7 +17,7 @@ object Dependencies {
   lazy val catsCore = "org.typelevel" %% "cats-core" % catsVersion
   lazy val catsFree = "org.typelevel" %% "cats-free" % catsVersion
 
-  lazy val catsEffect = "org.typelevel" %% "cats-effect" % "2.1.4"
+  lazy val catsEffect = "org.typelevel" %% "cats-effect" % "2.2.0"
 
   lazy val simulacrum = "org.typelevel" %% "simulacrum" % "1.0.1"
 
