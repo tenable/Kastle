@@ -31,6 +31,6 @@ object Dependencies {
 
   lazy val silencerVersion = "1.7.1"
   lazy val silencerPlugin  = "com.github.ghik" % "silencer-plugin" % silencerVersion cross CrossVersion.full
-  lazy val kindProjector   = "org.typelevel" % "kind-projector" % "0.11.1" cross CrossVersion.full
+  lazy val kindProjector   = "org.typelevel" % "kind-projector" % "0.11.2" cross CrossVersion.full
 
 }
