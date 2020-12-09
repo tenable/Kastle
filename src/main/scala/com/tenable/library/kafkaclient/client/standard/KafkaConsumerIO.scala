@@ -66,7 +66,12 @@ object KafkaConsumerIO {
   type Initialized =
     CreatedEmpty with WithKeyDeserializer with WithValueDeserializer
 
-  class Builder[T <: BuilderState, F[_]: ConcurrentEffect: ContextShift: Timer, K, V] private[KafkaConsumerIO] (
+  class Builder[
+      T <: BuilderState,
+      F[_]: ConcurrentEffect: ContextShift: Timer,
+      K,
+      V
+  ] private[KafkaConsumerIO] (
       config: KafkaConsumerConfig,
       keyDeserializer: Option[Deserializer[K]],
       valueDeserializer: Option[Deserializer[V]],
@@ -143,16 +148,16 @@ object KafkaConsumerIO {
     for {
       ec <- optionalBlockingEC.getOrElse(ExecutionContexts.io(s"kafka-consumer"))
       consumer <- Resource.make(
-                   create[F, K, V](
-                     config,
-                     keyDeserializer,
-                     valueDeserializer,
-                     ec,
-                     rebalanceListener
-                   )
-                 )(
-                   _.close()
-                 )
+                    create[F, K, V](
+                      config,
+                      keyDeserializer,
+                      valueDeserializer,
+                      ec,
+                      rebalanceListener
+                    )
+                  )(
+                    _.close()
+                  )
     } yield consumer
 
   @silent
@@ -270,9 +275,12 @@ object KafkaConsumerIO {
         F.delay {
           val tps = state.consumer.assignment().asScala.filter(topicPartitions)
           state.consumer.resume(tps.asJava)
-          (state.copy(pausedTP = state.pausedTP.filterNot {
-            case (k, _) => topicPartitions.contains(k)
-          }), ())
+          (
+            state.copy(pausedTP = state.pausedTP.filterNot { case (k, _) =>
+              topicPartitions.contains(k)
+            }),
+            ()
+          )
         }
       }
 
@@ -288,7 +296,10 @@ object KafkaConsumerIO {
       stateHandler.withConsumer("batch-commit-async") { state =>
         F.delay {
           state.consumer
-            .commitAsync(offsets.mapValues(o => new OffsetAndMetadata(o)).toMap.asJava, null) // scalastyle:off null
+            .commitAsync(
+              offsets.mapValues(o => new OffsetAndMetadata(o)).toMap.asJava,
+              null
+            ) // scalastyle:off null
           (state, ())
         }
       }

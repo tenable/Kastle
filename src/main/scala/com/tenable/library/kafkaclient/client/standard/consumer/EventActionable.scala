@@ -16,8 +16,8 @@ trait EventActionable[A] {
 object EventActionable {
   def apply[A](implicit EA: EventActionable[A]): EventActionable[A] = EA
 
-  implicit def deriveFromApplicativeError[G[_]: Foldable, E: Show](
-      implicit AE: ApplicativeError[G, E]
+  implicit def deriveFromApplicativeError[G[_]: Foldable, E: Show](implicit
+      AE: ApplicativeError[G, E]
   ): EventActionable[G[Unit]] =
     (processResult: G[Unit]) => {
       processResult.attempt
@@ -28,10 +28,10 @@ object EventActionable {
     }
 
   implicit def deriveFromEither[E](implicit S: Show[E]): EventActionable[Either[E, Unit]] =
-    deriveFromApplicativeError[Either[E, ?], E]
+    deriveFromApplicativeError[Either[E, *], E]
 
   implicit def deriveFromTry(implicit S: Show[Throwable]): EventActionable[Try[Unit]] =
-    deriveFromApplicativeError[Try[?], Throwable]
+    deriveFromApplicativeError[Try[*], Throwable]
 
   def deriveFromResult[A](f: A => ProcessAction): EventActionable[A] =
     (a: A) => f(a)

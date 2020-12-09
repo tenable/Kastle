@@ -39,8 +39,7 @@ trait KafkaProducerIO[F[_], K, V] { self =>
       decorate: ProducerRecord[K, V] => ProducerRecord[K, V]
   ): F[List[RecordMetadata]]
 
-  /**
-    * When sending an event using the asynchronous Kafka client, there are two stages of `done`:
+  /** When sending an event using the asynchronous Kafka client, there are two stages of `done`:
     * 1) When the event has been pushed onto the client's buffer. This is the point at which the Java Future returned by
     *    the `KafkaProducer#send` method completes
     * 2) When the event has been flushed from the local buffer out to Kafka itself. This is when the optional callback
@@ -174,13 +173,13 @@ object KafkaProducerIO {
     for {
       blockingEC <- optionalBlockingEC.getOrElse(ExecutionContexts.io("kafka-producer-io"))
       producer <- Resource.make(
-                   create[F, K, V](
-                     config,
-                     keySerializer,
-                     valueSerializer,
-                     blockingEC
-                   )
-                 )(_.close())
+                    create[F, K, V](
+                      config,
+                      keySerializer,
+                      valueSerializer,
+                      blockingEC
+                    )
+                  )(_.close())
     } yield producer
 
   private def create[F[_]: Async: ContextShift, K, V](
@@ -224,8 +223,8 @@ object KafkaProducerIO {
         decorate: ProducerRecord[K, V] => ProducerRecord[K, V]
     ): F[List[RecordMetadata]] =
       CS.evalOn(blockingEC) {
-        keyValues.traverse {
-          case (key, value) => sendConfirmed(outputTopic, key, value, decorate)
+        keyValues.traverse { case (key, value) =>
+          sendConfirmed(outputTopic, key, value, decorate)
         }
       }
 
@@ -245,8 +244,8 @@ object KafkaProducerIO {
         decorate: ProducerRecord[K, V] => ProducerRecord[K, V]
     ): F[List[RecordMetadata]] =
       CS.evalOn(blockingEC) {
-        keyValues.traverse {
-          case (key, value) => sendUnconfirmed(outputTopic, key, value, decorate)
+        keyValues.traverse { case (key, value) =>
+          sendUnconfirmed(outputTopic, key, value, decorate)
         }
       }
 
@@ -282,8 +281,8 @@ object KafkaProducerIO {
     ): F[RecordMetadata] =
       for {
         futureRecord <- F.catchNonFatal(
-                         producer.send(decorate(producerRecord(outputTopic, key, value)))
-                       )
+                          producer.send(decorate(producerRecord(outputTopic, key, value)))
+                        )
         record <- futureRecord.liftJF
       } yield record
 

@@ -62,7 +62,8 @@ object KafkaProcessable {
         Cofree.ana[Option, KP.Ref, GAndOffsets[G[K, V]]](start)(
           { ref =>
             KP.previous(crs, ref)
-          }, { ref =>
+          },
+          { ref =>
             KP.gAtRef(crs, ref)
           }
         )
@@ -77,14 +78,13 @@ object KafkaProcessable {
     val M = Sync[M]
 
     Cofree
-      .cataM[Option, M, GAndOffsets[G[K, V]], BatchContext](cofree) {
-        case ((g, offsets), acc) =>
-          acc match {
-            case Some(ctx) if KP.shouldFilter(g, ctx) => Monad[M].pure(ctx)
-            case other =>
-              val currentCtx = other.getOrElse(BatchContext.empty)
-              runG { (g, offsets) }.map(_ |+| currentCtx)
-          }
+      .cataM[Option, M, GAndOffsets[G[K, V]], BatchContext](cofree) { case ((g, offsets), acc) =>
+        acc match {
+          case Some(ctx) if KP.shouldFilter(g, ctx) => Monad[M].pure(ctx)
+          case other =>
+            val currentCtx = other.getOrElse(BatchContext.empty)
+            runG { (g, offsets) }.map(_ |+| currentCtx)
+        }
       }(new (Eval ~> M) {
         override def apply[A](fa: Eval[A]): M[A] = fa match {
           case Now(value) => M.pure(value)

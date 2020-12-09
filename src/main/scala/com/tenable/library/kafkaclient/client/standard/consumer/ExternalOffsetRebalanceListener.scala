@@ -22,9 +22,8 @@ class ExternalOffsetRebalanceListener[F[_]: ConcurrentEffect](
   def onPartitionsAssigned(partitions: ju.Collection[TopicPartition]): Unit = {
     val partitionsSet = partitions.asScala.toSet
     findOffsets(partitionsSet).map { offsetMap =>
-      offsetMap.toList.foreach {
-        case (tp, offset) =>
-          consumer.seek(tp, offset.map(_ + 1).getOrElse(0L))
+      offsetMap.toList.foreach { case (tp, offset) =>
+        consumer.seek(tp, offset.map(_ + 1).getOrElse(0L))
       }
     }.toIO.unsafeRunSync() //Dealing with sync java API's here :)
   }

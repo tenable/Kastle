@@ -125,9 +125,8 @@ private[standard] class ConsumerStateHandler[F[_]: ConcurrentEffect: ContextShif
 
     val keepAliveF =
       F.delay(logger.info(s"Running keep-alive check every ${interval.toSeconds} seconds")) *>
-        keepAlive().recoverWith {
-          case NonFatal(t) =>
-            F.delay(logger.error("Unhandled error while doing keep alives", t)) *> F.unit
+        keepAlive().recoverWith { case NonFatal(t) =>
+          F.delay(logger.error("Unhandled error while doing keep alives", t)) *> F.unit
         } <* T.sleep(interval)
 
     F.start {

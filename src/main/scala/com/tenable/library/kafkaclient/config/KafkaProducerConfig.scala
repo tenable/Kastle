@@ -17,7 +17,7 @@ sealed abstract class AckStrategy(private[config] val configValue: String) {
 
 object AckStrategy {
   object NoAck extends AckStrategy("0")
-  object One   extends AckStrategy("1") //only leader acks
+  object One   extends AckStrategy("1")   //only leader acks
   object All   extends AckStrategy("all") //every broker must ack
 
   def fromString(str: String): Either[String, AckStrategy] = {
@@ -32,11 +32,14 @@ object AckStrategy {
 case class KafkaProducerConfig(
     connectionString: String,
     ackStrategy: AckStrategy,
-    retries: Int,                             //Have client retry failed sends -- subtle pitfall: may mess up ordering -- see ProducerConfig.RETRIES_DOC
-    batchSize: Int,                           //in bytes
-    linger: FiniteDuration,                   //wait up to this long to receive batchsize worth of messages before sending
-    bufferSize: Long,                         //memory to use for records waiting to be sent
-    additionalProperties: Map[String, String] //properties in here override ones set by above variables
+    retries: Int,           //Have client retry failed sends -- subtle pitfall: may mess up ordering -- see ProducerConfig.RETRIES_DOC
+    batchSize: Int,         //in bytes
+    linger: FiniteDuration, //wait up to this long to receive batchsize worth of messages before sending
+    bufferSize: Long,       //memory to use for records waiting to be sent
+    additionalProperties: Map[
+      String,
+      String
+    ] //properties in here override ones set by above variables
 ) {
 
   @silent
@@ -76,7 +79,9 @@ object KafkaProducerConfig {
       batchSize,
       linger,
       bufferSize,
-      Map(additionalProperties.asScala.toSeq: _*) //copy this because additionalProperties is mutable
+      Map(
+        additionalProperties.asScala.toSeq: _*
+      ) //copy this because additionalProperties is mutable
     )
   }
 
@@ -84,7 +89,8 @@ object KafkaProducerConfig {
     new KafkaProducerConfig(
       connectionString,
       ackStrategy = AckStrategy.One,
-      retries = 0,                     //if not configured with max batch in flight = 1, retries can mess up ordering.  disable by default for now
+      retries =
+        0,                             //if not configured with max batch in flight = 1, retries can mess up ordering.  disable by default for now
       batchSize = 64 * 1024,           //arbitrarily settings this to 64k for now
       linger = 100.millis,             //TODO tune this value
       bufferSize = 1024L * 1024L * 5L, //TODO: set this to some sane value

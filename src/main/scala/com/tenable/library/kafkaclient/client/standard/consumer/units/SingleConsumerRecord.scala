@@ -25,7 +25,10 @@ object SingleConsumerRecord {
       val ((tp, idx), remainingTp) = ref
       if (idx - 1 < 0) {
         remainingTp.find(otherTp => !crs.records(otherTp).isEmpty).map { newTp =>
-          ((newTp, crs.records(newTp).size() - 1), remainingTp.filterNot(_ == newTp)) //Using `--` (that uses hashCode) has some funky results. Avoid!
+          (
+            (newTp, crs.records(newTp).size() - 1),
+            remainingTp.filterNot(_ == newTp)
+          ) //Using `--` (that uses hashCode) has some funky results. Avoid!
         }
       } else {
         Some(((tp, idx - 1), remainingTp))

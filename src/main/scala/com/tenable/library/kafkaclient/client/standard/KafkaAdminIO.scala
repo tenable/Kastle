@@ -100,12 +100,12 @@ object KafkaAdminIO {
     for {
       blockingEC <- optionalBlockingEC.getOrElse(ExecutionContexts.io("kafka-admin-io"))
       admin <- Resource.make(
-                create(
-                  adminConfig,
-                  blockingEC,
-                  timeout.getOrElse(DefaultTimeout)
-                )
-              )(_.close())
+                 create(
+                   adminConfig,
+                   blockingEC,
+                   timeout.getOrElse(DefaultTimeout)
+                 )
+               )(_.close())
     } yield admin
 
   private def create[F[_]: Async: ContextShift](
@@ -174,9 +174,8 @@ object KafkaAdminIO {
             newPartitions.asJava
 
           F.delay(
-              admin.createPartitions(partitions).all.get(timeout.toMillis, TimeUnit.MILLISECONDS)
-            )
-            .map(_ => ())
+            admin.createPartitions(partitions).all.get(timeout.toMillis, TimeUnit.MILLISECONDS)
+          ).map(_ => ())
         }
 
       override def deleteRecords(
@@ -209,10 +208,9 @@ object KafkaAdminIO {
       override def describeDelegationToken(): F[List[DelegationToken]] =
         CS.evalOn(blockingEC) {
           F.delay(
-              admin.describeDelegationToken.delegationTokens
-                .get(timeout.toMillis, TimeUnit.MILLISECONDS)
-            )
-            .map(_.asScala.toList)
+            admin.describeDelegationToken.delegationTokens
+              .get(timeout.toMillis, TimeUnit.MILLISECONDS)
+          ).map(_.asScala.toList)
         }
 
       override def describeConsumerGroups(
@@ -223,9 +221,8 @@ object KafkaAdminIO {
             groupIds.asJava
 
           F.delay(
-              admin.describeConsumerGroups(groups).all.get(timeout.toMillis, TimeUnit.MILLISECONDS)
-            )
-            .map(_.asScala.toMap)
+            admin.describeConsumerGroups(groups).all.get(timeout.toMillis, TimeUnit.MILLISECONDS)
+          ).map(_.asScala.toMap)
         }
 
       override def listConsumerGroups(): F[List[ConsumerGroupListing]] =
@@ -239,12 +236,11 @@ object KafkaAdminIO {
       ): F[Map[TopicPartition, OffsetAndMetadata]] =
         CS.evalOn(blockingEC) {
           F.delay(
-              admin
-                .listConsumerGroupOffsets(groupId)
-                .partitionsToOffsetAndMetadata
-                .get(timeout.toMillis, TimeUnit.MILLISECONDS)
-            )
-            .map(_.asScala.toMap)
+            admin
+              .listConsumerGroupOffsets(groupId)
+              .partitionsToOffsetAndMetadata
+              .get(timeout.toMillis, TimeUnit.MILLISECONDS)
+          ).map(_.asScala.toMap)
         }
 
       override def deleteConsumerGroups(groupIds: List[String]): F[Unit] =
@@ -253,9 +249,8 @@ object KafkaAdminIO {
             groupIds.asJava
 
           F.delay(
-              admin.deleteConsumerGroups(groups).all.get(timeout.toMillis, TimeUnit.MILLISECONDS)
-            )
-            .map(_ => ())
+            admin.deleteConsumerGroups(groups).all.get(timeout.toMillis, TimeUnit.MILLISECONDS)
+          ).map(_ => ())
         }
 
       override def describeConfigsForTopic(
@@ -267,22 +262,20 @@ object KafkaAdminIO {
             .asJava
 
           F.delay(
-              admin
-                .describeConfigs(configResources)
-                .all
-                .get(timeout.toMillis, TimeUnit.MILLISECONDS)
+            admin
+              .describeConfigs(configResources)
+              .all
+              .get(timeout.toMillis, TimeUnit.MILLISECONDS)
+          ).map(_.asScala.map { case (configResource, config) =>
+            (
+              configResource.name,
+              config
+                .entries()
+                .asScala
+                .map(configEntry => (configEntry.name, configEntry.value))
+                .toMap
             )
-            .map(_.asScala.map {
-              case (configResource, config) =>
-                (
-                  configResource.name,
-                  config
-                    .entries()
-                    .asScala
-                    .map(configEntry => (configEntry.name, configEntry.value))
-                    .toMap
-                )
-            }.toMap)
+          }.toMap)
         }
 
       override def close(): F[Unit] =
