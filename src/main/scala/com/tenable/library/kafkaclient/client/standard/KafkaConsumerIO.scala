@@ -7,7 +7,12 @@ import cats.syntax.apply._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.effect.concurrent.{MVar, MVar2}
-import com.tenable.library.kafkaclient.client.standard.consumer.{ConsumerStateHandler, KafkaRunLoop, PausedTemporarily, State}
+import com.tenable.library.kafkaclient.client.standard.consumer.{
+  ConsumerStateHandler,
+  KafkaRunLoop,
+  PausedTemporarily,
+  State
+}
 import org.apache.kafka.clients.consumer._
 import org.apache.kafka.common.{PartitionInfo, TopicPartition}
 import org.apache.kafka.common.serialization.Deserializer
