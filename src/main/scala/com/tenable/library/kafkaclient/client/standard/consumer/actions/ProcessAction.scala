@@ -96,6 +96,7 @@ object ProcessAction {
       case s @ SingleAction(_, _) => doInterpret[F](kafkaIO, s, offsets)
     }
 
+  // scalastyle:off cyclomatic.complexity
   private def doInterpret[F[_]: Monad](
       kIO: KafkaConsumerIO[F, _, _],
       action: SingleAction,
@@ -151,6 +152,7 @@ object ProcessAction {
         } yield BatchContext(offsetsR.keySet)
     }
   }
+  // scalastyle:on cyclomatic.complexity
 
   implicit val postProcessActionM: Monoid[ProcessAction] =
     new Monoid[ProcessAction] {

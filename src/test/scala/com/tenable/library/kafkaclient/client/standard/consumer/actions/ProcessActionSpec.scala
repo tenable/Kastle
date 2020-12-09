@@ -3,7 +3,6 @@ package com.tenable.library.kafkaclient.client.standard.consumer.actions
 import java.time.Instant
 
 import cats.effect.IO
-import com.github.ghik.silencer.silent
 import com.tenable.library.kafkaclient.client.standard.consumer.{
   BatchContext,
   GOffsets,
@@ -16,7 +15,6 @@ import scala.concurrent.duration.DurationInt
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-@silent
 class ProcessActionSpec extends AnyFlatSpec with Matchers {
   val defaultTopic = "test-topic"
 
@@ -65,7 +63,7 @@ class ProcessActionSpec extends AnyFlatSpec with Matchers {
 
     result shouldBe BatchContext.empty
     kafkaConsumerIO.recordedActions should contain theSameElementsInOrderAs Seq(
-      kafkaConsumerIO.Commit(partitionOffsets.mapValues(_.commit).toMap)
+      kafkaConsumerIO.Commit(partitionOffsets.view.mapValues(_.commit).toMap)
     )
   }
 
@@ -82,7 +80,7 @@ class ProcessActionSpec extends AnyFlatSpec with Matchers {
 
     result shouldBe BatchContext.empty
     kafkaConsumerIO.recordedActions should contain theSameElementsInOrderAs Seq(
-      kafkaConsumerIO.Commit(partitionOffsets.mapValues(_.commit).toMap)
+      kafkaConsumerIO.Commit(partitionOffsets.view.mapValues(_.commit).toMap)
     )
   }
 
@@ -100,7 +98,7 @@ class ProcessActionSpec extends AnyFlatSpec with Matchers {
 
     result shouldBe BatchContext.empty
     kafkaConsumerIO.recordedActions should contain theSameElementsInOrderAs Seq(
-      kafkaConsumerIO.Commit((partition2 ++ partition3).mapValues(_.commit).toMap)
+      kafkaConsumerIO.Commit((partition2 ++ partition3).view.mapValues(_.commit).toMap)
     )
   }
 
@@ -118,7 +116,7 @@ class ProcessActionSpec extends AnyFlatSpec with Matchers {
 
     result shouldBe BatchContext(partitionOffsets.keySet)
     kafkaConsumerIO.recordedActions should contain theSameElementsInOrderAs Seq(
-      kafkaConsumerIO.SeekWithError(partitionOffsets.mapValues(_.reject).toMap, error)
+      kafkaConsumerIO.SeekWithError(partitionOffsets.view.mapValues(_.reject).toMap, error)
     )
   }
 
@@ -137,8 +135,8 @@ class ProcessActionSpec extends AnyFlatSpec with Matchers {
 
     result shouldBe BatchContext(partitionOffsets.keySet)
     kafkaConsumerIO.recordedActions should contain theSameElementsInOrderAs Seq(
-      kafkaConsumerIO.SeekWithError(partitionOffsets.mapValues(_.reject).toMap, error),
-      kafkaConsumerIO.PauseTPs(partitionOffsets.mapValues(_ => pausedTemporarily).toMap)
+      kafkaConsumerIO.SeekWithError(partitionOffsets.view.mapValues(_.reject).toMap, error),
+      kafkaConsumerIO.PauseTPs(partitionOffsets.view.mapValues(_ => pausedTemporarily).toMap)
     )
   }
 
@@ -156,7 +154,7 @@ class ProcessActionSpec extends AnyFlatSpec with Matchers {
 
     result shouldBe BatchContext(partition1.keySet)
     kafkaConsumerIO.recordedActions should contain theSameElementsInOrderAs Seq(
-      kafkaConsumerIO.SeekWithError(partition1.mapValues(_.reject).toMap, error)
+      kafkaConsumerIO.SeekWithError(partition1.view.mapValues(_.reject).toMap, error)
     )
   }
 
@@ -173,8 +171,8 @@ class ProcessActionSpec extends AnyFlatSpec with Matchers {
 
     result shouldBe BatchContext.empty
     kafkaConsumerIO.recordedActions should contain theSameElementsInOrderAs Seq(
-      kafkaConsumerIO.Commit(partition1.mapValues(_.commit).toMap),
-      kafkaConsumerIO.Commit(partition2.mapValues(_.commit).toMap)
+      kafkaConsumerIO.Commit(partition1.view.mapValues(_.commit).toMap),
+      kafkaConsumerIO.Commit(partition2.view.mapValues(_.commit).toMap)
     )
   }
 
@@ -193,8 +191,8 @@ class ProcessActionSpec extends AnyFlatSpec with Matchers {
 
     result shouldBe BatchContext(partition3.keySet)
     kafkaConsumerIO.recordedActions should contain theSameElementsInOrderAs Seq(
-      kafkaConsumerIO.SeekWithError(partition3.mapValues(_.reject).toMap, error),
-      kafkaConsumerIO.Commit((partition1 ++ partition2).mapValues(_.commit).toMap)
+      kafkaConsumerIO.SeekWithError(partition3.view.mapValues(_.reject).toMap, error),
+      kafkaConsumerIO.Commit((partition1 ++ partition2).view.mapValues(_.commit).toMap)
     )
   }
 
@@ -215,9 +213,9 @@ class ProcessActionSpec extends AnyFlatSpec with Matchers {
 
     result shouldBe BatchContext(partition3.keySet)
     kafkaConsumerIO.recordedActions should contain theSameElementsInOrderAs Seq(
-      kafkaConsumerIO.SeekWithError(partition3.mapValues(_.reject).toMap, error),
-      kafkaConsumerIO.PauseTPs(partition3.mapValues(_ => pausedTemporarily).toMap),
-      kafkaConsumerIO.Commit((partition1 ++ partition2).mapValues(_.commit).toMap)
+      kafkaConsumerIO.SeekWithError(partition3.view.mapValues(_.reject).toMap, error),
+      kafkaConsumerIO.PauseTPs(partition3.view.mapValues(_ => pausedTemporarily).toMap),
+      kafkaConsumerIO.Commit((partition1 ++ partition2).view.mapValues(_.commit).toMap)
     )
   }
 
@@ -239,9 +237,9 @@ class ProcessActionSpec extends AnyFlatSpec with Matchers {
 
     result shouldBe BatchContext(partition3.keySet)
     kafkaConsumerIO.recordedActions should contain theSameElementsInOrderAs Seq(
-      kafkaConsumerIO.SeekWithError(partition3.mapValues(_.reject).toMap, error),
-      kafkaConsumerIO.Commit(partition1.mapValues(_.commit).toMap),
-      kafkaConsumerIO.Commit(partition2.mapValues(_.commit).toMap)
+      kafkaConsumerIO.SeekWithError(partition3.view.mapValues(_.reject).toMap, error),
+      kafkaConsumerIO.Commit(partition1.view.mapValues(_.commit).toMap),
+      kafkaConsumerIO.Commit(partition2.view.mapValues(_.commit).toMap)
     )
   }
 
@@ -263,10 +261,10 @@ class ProcessActionSpec extends AnyFlatSpec with Matchers {
 
     result shouldBe BatchContext(partition3.keySet)
     kafkaConsumerIO.recordedActions should contain theSameElementsInOrderAs Seq(
-      kafkaConsumerIO.SeekWithError(partition3.mapValues(_.reject).toMap, error),
-      kafkaConsumerIO.PauseTPs(partition3.mapValues(_ => pausedTemporarily).toMap),
-      kafkaConsumerIO.Commit(partition1.mapValues(_.commit).toMap),
-      kafkaConsumerIO.Commit(partition2.mapValues(_.commit).toMap)
+      kafkaConsumerIO.SeekWithError(partition3.view.mapValues(_.reject).toMap, error),
+      kafkaConsumerIO.PauseTPs(partition3.view.mapValues(_ => pausedTemporarily).toMap),
+      kafkaConsumerIO.Commit(partition1.view.mapValues(_.commit).toMap),
+      kafkaConsumerIO.Commit(partition2.view.mapValues(_.commit).toMap)
     )
   }
 }

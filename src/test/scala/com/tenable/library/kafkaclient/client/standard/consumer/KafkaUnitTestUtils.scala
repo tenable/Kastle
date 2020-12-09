@@ -5,12 +5,10 @@ import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common._
 import java.util.{List => JList}
 
-import com.github.ghik.silencer.silent
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.collection.mutable.ArrayBuffer
 
-@silent
 object KafkaUnitTestUtils {
   class KafkaConsumerIORecording[F[_]: Monad] extends NoOpKafkaConsumerIO[F] {
     private val F                 = Monad[F]

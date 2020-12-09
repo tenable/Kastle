@@ -94,8 +94,8 @@ private[standard] class ConsumerStateHandler[F[_]: ConcurrentEffect: ContextShif
     }
 
   private def runKeepAlive(interval: FiniteDuration): F[CancelToken[F]] = {
-    if (interval.toMillis == 0) noKeepAlive
-    else withKeepAlive(interval)
+    if (interval.toMillis == 0) { noKeepAlive }
+    else { withKeepAlive(interval) }
   }
 
   private def noKeepAlive: F[CancelToken[F]] = {
