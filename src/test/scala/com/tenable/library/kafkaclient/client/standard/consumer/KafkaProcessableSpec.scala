@@ -1,6 +1,6 @@
 package com.tenable.library.kafkaclient.client.standard.consumer
 
-import java.util.{List => JList}
+import java.util.{ List => JList }
 
 import cats.data.StateT
 import cats.effect.IO
@@ -21,7 +21,7 @@ class KafkaProcessableSpec extends AnyFlatSpec with Matchers {
     new KafkaProcessable[TestRecord] {
       override type Ref = TestRecordRef
       private def sort[K, V](
-          consumerRecords: ConsumerRecords[K, V]
+        consumerRecords: ConsumerRecords[K, V]
       ): IndexedSeq[(TopicPartition, IndexedSeq[ConsumerRecord[K, V]])] = {
         val sortedTps =
           consumerRecords.partitions().asScala.toIndexedSeq.sortBy(x => (x.topic(), x.partition()))
@@ -56,8 +56,8 @@ class KafkaProcessableSpec extends AnyFlatSpec with Matchers {
       }
 
       def gAtRef[K, V](
-          consumerRecords: ConsumerRecords[K, V],
-          ref: TestRecordRef
+        consumerRecords: ConsumerRecords[K, V],
+        ref: TestRecordRef
       ): (TestRecord[K, V], Map[TopicPartition, GOffsets]) = {
         val sorted = sort(consumerRecords)
         val record = sorted(ref.topicPartitionIndex)._2(ref.index)
@@ -72,11 +72,10 @@ class KafkaProcessableSpec extends AnyFlatSpec with Matchers {
         )
       }
 
-      def shouldFilter[K, V](g: TestRecord[K, V], ctx: BatchContext): Boolean = {
+      def shouldFilter[K, V](g: TestRecord[K, V], ctx: BatchContext): Boolean =
         ctx.skippingPartitions(
           new TopicPartition(g.consumerRecord.topic(), g.consumerRecord.partition())
         )
-      }
     }
 
   "KafkaProcessable.build" should "return an empty set if empty input" in {
@@ -99,12 +98,14 @@ class KafkaProcessableSpec extends AnyFlatSpec with Matchers {
 
     //Run cofree with stateT to gather results
     val res = KafkaProcessable
-      .run[StateT[IO, ArrayBuffer[String], *], String, String, TestRecord](batch, {
-        case (g, _) =>
+      .run[StateT[IO, ArrayBuffer[String], *], String, String, TestRecord](
+        batch,
+        { case (g, _) =>
           StateT.apply[IO, ArrayBuffer[String], BatchContext](s =>
             IO.pure((s.+=(g.consumerRecord.value()), BatchContext.empty))
           )
-      })
+        }
+      )
       .run(ArrayBuffer.empty)
       .unsafeRunSync()
       ._1
@@ -128,13 +129,13 @@ class KafkaProcessableSpec extends AnyFlatSpec with Matchers {
     //Run cofree with stateT to gather results
     val res = KafkaProcessable
       .run[StateT[IO, ArrayBuffer[String], *], String, String, TestRecord](
-        batch, {
-          case (g, _) =>
-            StateT.apply[IO, ArrayBuffer[String], BatchContext] { s =>
-              if (g.consumerRecord.topic() == "tA" && g.consumerRecord.offset() == 0)
-                IO.pure((s, BatchContext(Set(new TopicPartition("tA", 1)))))
-              else IO.pure((s.+=(g.consumerRecord.value()), BatchContext.empty))
-            }
+        batch,
+        { case (g, _) =>
+          StateT.apply[IO, ArrayBuffer[String], BatchContext] { s =>
+            if (g.consumerRecord.topic() == "tA" && g.consumerRecord.offset() == 0)
+              IO.pure((s, BatchContext(Set(new TopicPartition("tA", 1)))))
+            else IO.pure((s.+=(g.consumerRecord.value()), BatchContext.empty))
+          }
         }
       )
       .run(ArrayBuffer.empty)

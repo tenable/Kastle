@@ -21,26 +21,25 @@ object AckStrategy {
   object One   extends AckStrategy("1")   //only leader acks
   object All   extends AckStrategy("all") //every broker must ack
 
-  def fromString(str: String): Either[String, AckStrategy] = {
+  def fromString(str: String): Either[String, AckStrategy] =
     str match {
       case NoAck.configValue => NoAck.asRight
       case One.configValue   => One.asRight
       case All.configValue   => All.asRight
       case _                 => s"Unknown ack strategy $str".asLeft
     }
-  }
 }
 case class KafkaProducerConfig(
-    connectionString: String,
-    ackStrategy: AckStrategy,
-    retries: Int,           //Have client retry failed sends -- subtle pitfall: may mess up ordering -- see ProducerConfig.RETRIES_DOC
-    batchSize: Int,         //in bytes
-    linger: FiniteDuration, //wait up to this long to receive batchsize worth of messages before sending
-    bufferSize: Long,       //memory to use for records waiting to be sent
-    additionalProperties: Map[
-      String,
-      String
-    ] //properties in here override ones set by above variables
+  connectionString: String,
+  ackStrategy: AckStrategy,
+  retries: Int,           //Have client retry failed sends -- subtle pitfall: may mess up ordering -- see ProducerConfig.RETRIES_DOC
+  batchSize: Int,         //in bytes
+  linger: FiniteDuration, //wait up to this long to receive batchsize worth of messages before sending
+  bufferSize: Long,       //memory to use for records waiting to be sent
+  additionalProperties: Map[
+    String,
+    String
+  ] //properties in here override ones set by above variables
 ) {
 
   @nowarn
@@ -64,14 +63,14 @@ case class KafkaProducerConfig(
 
 object KafkaProducerConfig {
   def apply(
-      connectionString: String,
-      ackStrategy: AckStrategy,
-      retries: Int,
-      batchSize: Int,
-      linger: FiniteDuration,
-      bufferSize: Long,
-      additionalProperties: Properties
-  ): KafkaProducerConfig = {
+    connectionString: String,
+    ackStrategy: AckStrategy,
+    retries: Int,
+    batchSize: Int,
+    linger: FiniteDuration,
+    bufferSize: Long,
+    additionalProperties: Properties
+  ): KafkaProducerConfig =
     new KafkaProducerConfig(
       connectionString,
       ackStrategy,
@@ -83,7 +82,6 @@ object KafkaProducerConfig {
         additionalProperties.asScala.toSeq: _*
       ) //copy this because additionalProperties is mutable
     )
-  }
 
   def default(connectionString: String): KafkaProducerConfig =
     new KafkaProducerConfig(

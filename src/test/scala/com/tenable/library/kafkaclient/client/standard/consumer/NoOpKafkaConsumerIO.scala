@@ -1,11 +1,11 @@
 package com.tenable.library.kafkaclient.client.standard.consumer
 
-import java.{util => ju}
+import java.{ util => ju }
 
 import cats.Monad
 import com.tenable.library.kafkaclient.client.standard.KafkaConsumerIO
-import org.apache.kafka.clients.consumer.{ConsumerRecord, ConsumerRecords, OffsetAndMetadata}
-import org.apache.kafka.common.{PartitionInfo, TopicPartition}
+import org.apache.kafka.clients.consumer.{ ConsumerRecord, ConsumerRecords, OffsetAndMetadata }
+import org.apache.kafka.common.{ PartitionInfo, TopicPartition }
 import cats.syntax.functor._
 
 import scala.concurrent.duration.Duration
@@ -42,11 +42,11 @@ class NoOpKafkaConsumerIO[F[_]: Monad] extends KafkaConsumerIO[F, Nothing, Nothi
   override def committed(topicPartition: TopicPartition, duration: Duration): F[OffsetAndMetadata] =
     emptyOffsetAndMetadata
   override def seekWithError(
-      offsets: Map[TopicPartition, Long],
-      error: Option[String]
+    offsets: Map[TopicPartition, Long],
+    error: Option[String]
   ): F[Unit] = F.unit
   override def pollForever
-      : KafkaRunLoop.Builder[KafkaRunLoop.CreatedEmpty, F, Nothing, Nothing, Nothing, Nothing] =
+    : KafkaRunLoop.Builder[KafkaRunLoop.CreatedEmpty, F, Nothing, Nothing, Nothing, Nothing] =
     throw new NotImplementedError("Cant poll forever on a no op consumer")
 
   private def set[T]: F[Set[T]]       = F.pure(Set.empty[T])

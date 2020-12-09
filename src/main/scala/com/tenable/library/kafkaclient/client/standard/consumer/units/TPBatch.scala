@@ -2,7 +2,7 @@ package com.tenable.library.kafkaclient.client.standard.consumer.units
 
 import cats.data.NonEmptyList
 import com.tenable.library.kafkaclient.client.standard.consumer._
-import org.apache.kafka.clients.consumer.{ConsumerRecord, ConsumerRecords}
+import org.apache.kafka.clients.consumer.{ ConsumerRecord, ConsumerRecords }
 import org.apache.kafka.common.TopicPartition
 
 import scala.collection.mutable
@@ -18,13 +18,12 @@ object TPBatch {
       partitions.headOption.map((_, partitions.tail))
     }
 
-    def previous[K, V](crs: ConsumerRecords[K, V], ref: Ref): Option[Ref] = {
+    def previous[K, V](crs: ConsumerRecords[K, V], ref: Ref): Option[Ref] =
       ref._2.headOption.map((_, ref._2.tail))
-    }
 
     def gAtRef[K, V](
-        crs: ConsumerRecords[K, V],
-        ref: Ref
+      crs: ConsumerRecords[K, V],
+      ref: Ref
     ): ((TopicPartition, NonEmptyList[ConsumerRecord[K, V]]), Map[TopicPartition, GOffsets]) = {
       val tp      = ref._1
       val records = NonEmptyList.fromListUnsafe(crs.records(tp).asScala.toList)
@@ -34,10 +33,9 @@ object TPBatch {
     }
 
     override def shouldFilter[K, V](
-        g: (TopicPartition, NonEmptyList[ConsumerRecord[K, V]]),
-        ctx: BatchContext
-    ): Boolean = {
+      g: (TopicPartition, NonEmptyList[ConsumerRecord[K, V]]),
+      ctx: BatchContext
+    ): Boolean =
       ctx.skippingPartitions(new TopicPartition(g._1.topic(), g._1.partition()))
-    }
   }
 }

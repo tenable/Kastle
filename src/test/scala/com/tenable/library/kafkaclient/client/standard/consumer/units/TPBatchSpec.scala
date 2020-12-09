@@ -1,12 +1,8 @@
 package com.tenable.library.kafkaclient.client.standard.consumer.units
 
 import cats.data.NonEmptyList
-import com.tenable.library.kafkaclient.client.standard.consumer.{
-  BatchContext,
-  GOffsets,
-  KafkaUnitTestUtils
-}
-import org.apache.kafka.clients.consumer.{ConsumerRecord, ConsumerRecords}
+import com.tenable.library.kafkaclient.client.standard.consumer.{ BatchContext, GOffsets, KafkaUnitTestUtils }
+import org.apache.kafka.clients.consumer.{ ConsumerRecord, ConsumerRecords }
 import org.apache.kafka.common.TopicPartition
 
 import scala.jdk.CollectionConverters._
@@ -56,7 +52,9 @@ class TPBatchSpec extends AnyFlatSpec with Matchers {
     val noneExpected = TPBatch.kafkaProcessable.previous(crs, next4.get)
 
     List(last.get, next1.get, next2.get, next3.get, next4.get)
-      .map(_.asInstanceOf[(TopicPartition, mutable.Set[TopicPartition])]._1) should contain theSameElementsAs crs
+      .map(
+        _.asInstanceOf[(TopicPartition, mutable.Set[TopicPartition])]._1
+      ) should contain theSameElementsAs crs
       .partitions()
       .asScala
 
@@ -75,7 +73,8 @@ class TPBatchSpec extends AnyFlatSpec with Matchers {
     )
 
     val expectedTp = new TopicPartition("r", 3)
-    val res = TPBatch.kafkaProcessable
+    val res = TPBatch
+      .kafkaProcessable
       .gAtRef(crs, (expectedTp, mutable.Set.empty).asInstanceOf[TPBatch.kafkaProcessable.Ref])
     res._2 shouldBe Map(expectedTp -> GOffsets(26, 0))
     res._1._1 shouldBe expectedTp
@@ -84,20 +83,24 @@ class TPBatchSpec extends AnyFlatSpec with Matchers {
 
   "TPBatch.shouldFilter" should "return true if TP is in the skipping partitions in context" in {
     val expectedTp = new TopicPartition("r", 3)
-    val res = TPBatch.kafkaProcessable.shouldFilter(
-      (expectedTp, NonEmptyList.of(new ConsumerRecord("r", 3, 30, "a", "a"))),
-      BatchContext(Set(expectedTp))
-    )
+    val res = TPBatch
+      .kafkaProcessable
+      .shouldFilter(
+        (expectedTp, NonEmptyList.of(new ConsumerRecord("r", 3, 30, "a", "a"))),
+        BatchContext(Set(expectedTp))
+      )
     res shouldBe true
   }
 
   it should "return false if tp is not in the skipping partition in context" in {
     val expectedTp = new TopicPartition("r", 3)
     val otherTp    = new TopicPartition("r", 4)
-    val res = TPBatch.kafkaProcessable.shouldFilter(
-      (expectedTp, NonEmptyList.of(new ConsumerRecord("r", 3, 30, "a", "a"))),
-      BatchContext(Set(otherTp))
-    )
+    val res = TPBatch
+      .kafkaProcessable
+      .shouldFilter(
+        (expectedTp, NonEmptyList.of(new ConsumerRecord("r", 3, 30, "a", "a"))),
+        BatchContext(Set(otherTp))
+      )
     res shouldBe false
   }
 }

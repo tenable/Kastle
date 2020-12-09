@@ -14,8 +14,8 @@ object FullBatch {
     def previous[K, V](consumerRecords: ConsumerRecords[K, V], ref: Ref): Option[Ref] = None
 
     def gAtRef[K, V](
-        consumerRecords: ConsumerRecords[K, V],
-        ref: Ref
+      consumerRecords: ConsumerRecords[K, V],
+      ref: Ref
     ): (ConsumerRecords[K, V], Map[TopicPartition, GOffsets]) = {
       val offsets = consumerRecords
         .partitions()

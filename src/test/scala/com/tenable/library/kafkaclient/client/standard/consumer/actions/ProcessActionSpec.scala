@@ -3,11 +3,7 @@ package com.tenable.library.kafkaclient.client.standard.consumer.actions
 import java.time.Instant
 
 import cats.effect.IO
-import com.tenable.library.kafkaclient.client.standard.consumer.{
-  BatchContext,
-  GOffsets,
-  PausedTemporarily
-}
+import com.tenable.library.kafkaclient.client.standard.consumer.{ BatchContext, GOffsets, PausedTemporarily }
 import com.tenable.library.kafkaclient.client.standard.consumer.KafkaUnitTestUtils.KafkaConsumerIORecording
 import org.apache.kafka.common.TopicPartition
 
@@ -19,12 +15,11 @@ class ProcessActionSpec extends AnyFlatSpec with Matchers {
   val defaultTopic = "test-topic"
 
   def offsets(
-      partition: Int,
-      commitOffset: Long,
-      rejectOffset: Long
-  ): Map[TopicPartition, GOffsets] = {
+    partition: Int,
+    commitOffset: Long,
+    rejectOffset: Long
+  ): Map[TopicPartition, GOffsets] =
     Map(new TopicPartition(defaultTopic, partition) -> GOffsets(commitOffset, rejectOffset))
-  }
 
   private val partition1 = offsets(1, 10, 1)
   private val partition2 = offsets(2, 35, 5)
@@ -229,8 +224,7 @@ class ProcessActionSpec extends AnyFlatSpec with Matchers {
       ProcessAction
         .interpret[IO](
           kafkaIO = kafkaConsumerIO,
-          action =
-            ProcessAction.rejectSomeCommitSome(commit, reject, error, maybePauseDetails = None),
+          action = ProcessAction.rejectSomeCommitSome(commit, reject, error, maybePauseDetails = None),
           offsets = partitionOffsets
         )
         .unsafeRunSync()

@@ -5,28 +5,22 @@ import cats.syntax.flatMap._
 import cats.syntax.foldable._
 import cats.syntax.semigroup._
 import cats.instances.list._
-import cats.{Monad, Monoid}
+import cats.{ Monad, Monoid }
 import com.tenable.library.kafkaclient.client.standard.KafkaConsumerIO
-import com.tenable.library.kafkaclient.client.standard.consumer.{
-  BatchContext,
-  GOffsets,
-  PausedTemporarily
-}
+import com.tenable.library.kafkaclient.client.standard.consumer.{ BatchContext, GOffsets, PausedTemporarily }
 import org.apache.kafka.common.TopicPartition
 
 sealed trait ProcessAction
 object ProcessAction {
 
   sealed trait KafkaAction
-  case object DoNothing                                         extends KafkaAction
-  case class Commit(except: Option[Set[TopicPartition]] = None) extends KafkaAction
-  case class Reject(error: Option[String], pauseDetails: Option[PausedTemporarily])
-      extends KafkaAction
+  case object DoNothing                                                             extends KafkaAction
+  case class Commit(except: Option[Set[TopicPartition]] = None)                     extends KafkaAction
+  case class Reject(error: Option[String], pauseDetails: Option[PausedTemporarily]) extends KafkaAction
 
   // If no topic partition defined action will be executed on all topic partitions offsets
-  case class SingleAction(kafkaAction: KafkaAction, maybeTP: Option[TopicPartition])
-      extends ProcessAction
-  case class MultiAction(actions: List[SingleAction]) extends ProcessAction
+  case class SingleAction(kafkaAction: KafkaAction, maybeTP: Option[TopicPartition]) extends ProcessAction
+  case class MultiAction(actions: List[SingleAction])                                extends ProcessAction
   object MultiAction {
     val empty: MultiAction = MultiAction(List.empty)
   }
@@ -57,16 +51,16 @@ object ProcessAction {
     MultiAction(tps.map(tp => SingleAction(Reject(error, None), Some(tp))).toList)
 
   def rejectPauseSome(
-      tps: Set[TopicPartition],
-      details: PausedTemporarily,
-      error: Option[String]
+    tps: Set[TopicPartition],
+    details: PausedTemporarily,
+    error: Option[String]
   ): ProcessAction =
     MultiAction(tps.map(tp => SingleAction(Reject(error, Some(details)), Some(tp))).toList)
 
   def rejectSomeCommitRest(
-      tps: Set[TopicPartition],
-      error: String,
-      maybePauseDetails: Option[PausedTemporarily]
+    tps: Set[TopicPartition],
+    error: String,
+    maybePauseDetails: Option[PausedTemporarily]
   ): ProcessAction =
     maybePauseDetails match {
       case Some(pd) => rejectPauseSome(tps, pd, Some(error)) |+| commitAllExcept(tps)
@@ -74,19 +68,19 @@ object ProcessAction {
     }
 
   def rejectSomeCommitSome(
-      commitTps: Set[TopicPartition],
-      rejectTps: Set[TopicPartition],
-      error: String,
-      maybePauseDetails: Option[PausedTemporarily]
+    commitTps: Set[TopicPartition],
+    rejectTps: Set[TopicPartition],
+    error: String,
+    maybePauseDetails: Option[PausedTemporarily]
   ): ProcessAction = maybePauseDetails match {
     case Some(pd) => rejectPauseSome(rejectTps, pd, Some(error)) |+| commitSome(commitTps)
     case None     => rejectSome(rejectTps, Some(error)) |+| commitSome(commitTps)
   }
 
   private[consumer] def interpret[F[_]: Monad](
-      kafkaIO: KafkaConsumerIO[F, _, _],
-      action: ProcessAction,
-      offsets: Map[TopicPartition, GOffsets]
+    kafkaIO: KafkaConsumerIO[F, _, _],
+    action: ProcessAction,
+    offsets: Map[TopicPartition, GOffsets]
   ): F[BatchContext] =
     action match {
       case MultiAction(actions) =>
@@ -98,9 +92,9 @@ object ProcessAction {
 
   // scalastyle:off cyclomatic.complexity
   private def doInterpret[F[_]: Monad](
-      kIO: KafkaConsumerIO[F, _, _],
-      action: SingleAction,
-      offsets: Map[TopicPartition, GOffsets]
+    kIO: KafkaConsumerIO[F, _, _],
+    action: SingleAction,
+    offsets: Map[TopicPartition, GOffsets]
   ): F[BatchContext] = {
 
     def using[R](tp: TopicPartition)(fn: GOffsets => R): Option[R] =

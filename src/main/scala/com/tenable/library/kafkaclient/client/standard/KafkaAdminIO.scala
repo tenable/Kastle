@@ -15,7 +15,7 @@ import org.apache.kafka.common.security.token.delegation.DelegationToken
 
 import scala.jdk.CollectionConverters._
 import scala.concurrent.ExecutionContext
-import scala.concurrent.duration.{Duration, DurationInt}
+import scala.concurrent.duration.{ Duration, DurationInt }
 
 trait KafkaAdminIO[F[_]] {
   def createTopics(topicDefinitions: Set[TopicDefinitionDetails]): F[Unit]
@@ -56,9 +56,9 @@ object KafkaAdminIO {
   type Initialized = CreatedEmpty
 
   class Builder[T <: BuilderState, F[_]: Async: ContextShift] private[KafkaAdminIO] (
-      config: KafkaAdminConfig,
-      blockingEC: Option[Resource[F, ExecutionContext]],
-      timeout: Option[Duration]
+    config: KafkaAdminConfig,
+    blockingEC: Option[Resource[F, ExecutionContext]],
+    timeout: Option[Duration]
   ) {
     type OngoingBuilder[TT <: BuilderState] = Builder[TT, F]
 
@@ -87,30 +87,30 @@ object KafkaAdminIO {
   }
 
   def builder[F[_]: Async: ContextShift](
-      adminConfig: KafkaAdminConfig
+    adminConfig: KafkaAdminConfig
   ): Builder[CreatedEmpty, F] =
     new Builder[CreatedEmpty, F](adminConfig, None, None)
 
   private def resource[F[_]: Async: ContextShift](
-      adminConfig: KafkaAdminConfig,
-      optionalBlockingEC: Option[Resource[F, ExecutionContext]],
-      timeout: Option[Duration]
+    adminConfig: KafkaAdminConfig,
+    optionalBlockingEC: Option[Resource[F, ExecutionContext]],
+    timeout: Option[Duration]
   ): Resource[F, KafkaAdminIO[F]] =
     for {
       blockingEC <- optionalBlockingEC.getOrElse(ExecutionContexts.io("kafka-admin-io"))
       admin <- Resource.make(
-                 create(
-                   adminConfig,
-                   blockingEC,
-                   timeout.getOrElse(DefaultTimeout)
-                 )
-               )(_.close())
+        create(
+          adminConfig,
+          blockingEC,
+          timeout.getOrElse(DefaultTimeout)
+        )
+      )(_.close())
     } yield admin
 
   private def create[F[_]: Async: ContextShift](
-      adminConfig: KafkaAdminConfig,
-      blockingEC: ExecutionContext,
-      timeout: Duration
+    adminConfig: KafkaAdminConfig,
+    blockingEC: ExecutionContext,
+    timeout: Duration
   ): F[KafkaAdminIO[F]] =
     Async[F].delay {
       val admin = AdminClient.create(adminConfig.properties)
@@ -119,9 +119,9 @@ object KafkaAdminIO {
 
   // scalastyle:off method.length
   private def apply[F[_]: Async: ContextShift](
-      admin: AdminClient,
-      blockingEC: ExecutionContext,
-      timeout: Duration
+    admin: AdminClient,
+    blockingEC: ExecutionContext,
+    timeout: Duration
   ): KafkaAdminIO[F] =
     new KafkaAdminIO[F] {
       private val F  = Async[F]
@@ -149,7 +149,7 @@ object KafkaAdminIO {
         }
 
       override def describeTopics(
-          topicDefinitions: Set[String]
+        topicDefinitions: Set[String]
       ): F[Map[String, TopicDescription]] =
         CS.evalOn(blockingEC) {
           val topics = topicDefinitions.asJava
@@ -165,7 +165,7 @@ object KafkaAdminIO {
         }
 
       override def createPartitions(
-          newPartitions: Map[String, NewPartitions]
+        newPartitions: Map[String, NewPartitions]
       ): F[Unit] =
         CS.evalOn(blockingEC) {
           val partitions =
@@ -177,7 +177,7 @@ object KafkaAdminIO {
         }
 
       override def deleteRecords(
-          recordsToDelete: Map[TopicPartition, RecordsToDelete]
+        recordsToDelete: Map[TopicPartition, RecordsToDelete]
       ): F[Unit] =
         CS.evalOn(blockingEC) {
           val records = recordsToDelete.asJava
@@ -206,13 +206,15 @@ object KafkaAdminIO {
       override def describeDelegationToken(): F[List[DelegationToken]] =
         CS.evalOn(blockingEC) {
           F.delay(
-            admin.describeDelegationToken.delegationTokens
+            admin
+              .describeDelegationToken
+              .delegationTokens
               .get(timeout.toMillis, TimeUnit.MILLISECONDS)
           ).map(_.asScala.toList)
         }
 
       override def describeConsumerGroups(
-          groupIds: List[String]
+        groupIds: List[String]
       ): F[Map[String, ConsumerGroupDescription]] =
         CS.evalOn(blockingEC) {
           val groups =
@@ -230,7 +232,7 @@ object KafkaAdminIO {
         }
 
       override def listConsumerGroupOffsets(
-          groupId: String
+        groupId: String
       ): F[Map[TopicPartition, OffsetAndMetadata]] =
         CS.evalOn(blockingEC) {
           F.delay(
@@ -252,7 +254,7 @@ object KafkaAdminIO {
         }
 
       override def describeConfigsForTopic(
-          resourceNames: List[String]
+        resourceNames: List[String]
       ): F[Map[String, Map[String, String]]] =
         CS.evalOn(blockingEC) {
           val configResources = resourceNames

@@ -1,10 +1,6 @@
 package com.tenable.library.kafkaclient.client.standard.consumer.units
 
-import com.tenable.library.kafkaclient.client.standard.consumer.{
-  BatchContext,
-  GOffsets,
-  KafkaUnitTestUtils
-}
+import com.tenable.library.kafkaclient.client.standard.consumer.{ BatchContext, GOffsets, KafkaUnitTestUtils }
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.common.TopicPartition
 
@@ -15,18 +11,22 @@ import org.scalatest.matchers.should.Matchers
 class FullBatchSpec extends AnyFlatSpec with Matchers {
 
   "FullBatchSpec.last" should "always return Some" in {
-    val res = FullBatch.kafkaProcessable.last(
-      new ConsumerRecords[String, String](KafkaUnitTestUtils.buildRecords("t", 1, "some").asJava)
-    )
+    val res = FullBatch
+      .kafkaProcessable
+      .last(
+        new ConsumerRecords[String, String](KafkaUnitTestUtils.buildRecords("t", 1, "some").asJava)
+      )
 
     res should not be empty
   }
 
   "FullBatchSpec.previous" should "always return None" in {
-    val res = FullBatch.kafkaProcessable.previous(
-      new ConsumerRecords[String, String](KafkaUnitTestUtils.buildRecords("t", 1, "some").asJava),
-      ().asInstanceOf[FullBatch.kafkaProcessable.Ref]
-    )
+    val res = FullBatch
+      .kafkaProcessable
+      .previous(
+        new ConsumerRecords[String, String](KafkaUnitTestUtils.buildRecords("t", 1, "some").asJava),
+        ().asInstanceOf[FullBatch.kafkaProcessable.Ref]
+      )
 
     res shouldBe empty
   }
@@ -39,10 +39,12 @@ class FullBatchSpec extends AnyFlatSpec with Matchers {
           KafkaUnitTestUtils.buildRecords("z", 9, ('a' to 's').toList.map(_.toString): _*)
       ).asJava
     )
-    val (gotRecords, offsets) = FullBatch.kafkaProcessable.gAtRef(
-      records,
-      ().asInstanceOf[FullBatch.kafkaProcessable.Ref]
-    )
+    val (gotRecords, offsets) = FullBatch
+      .kafkaProcessable
+      .gAtRef(
+        records,
+        ().asInstanceOf[FullBatch.kafkaProcessable.Ref]
+      )
 
     offsets shouldBe Map(
       new TopicPartition("d", 1) -> GOffsets(26, 0),
@@ -53,10 +55,12 @@ class FullBatchSpec extends AnyFlatSpec with Matchers {
   }
 
   "FullBatchSpec.previous" should "always return false" in {
-    val res = FullBatch.kafkaProcessable.shouldFilter(
-      new ConsumerRecords[String, String](KafkaUnitTestUtils.buildRecords("t", 1, "some").asJava),
-      BatchContext(Set(new TopicPartition("t", 1)))
-    )
+    val res = FullBatch
+      .kafkaProcessable
+      .shouldFilter(
+        new ConsumerRecords[String, String](KafkaUnitTestUtils.buildRecords("t", 1, "some").asJava),
+        BatchContext(Set(new TopicPartition("t", 1)))
+      )
 
     res shouldBe false
   }

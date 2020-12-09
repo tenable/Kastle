@@ -18,17 +18,17 @@ object ExecutionContexts {
   }
 
   private def executorServiceResource[F[_]: Sync](
-      name: String,
-      daemonic: Boolean,
-      onError: (Thread, Throwable) => Unit = defaultUncaughtExceptionHandler
+    name: String,
+    daemonic: Boolean,
+    onError: (Thread, Throwable) => Unit = defaultUncaughtExceptionHandler
   )(f: ThreadFactory => ExecutorService): Resource[F, ExecutorService] = {
     val tp = new ThreadFactory {
       def newThread(r: Runnable): Thread = {
         val t = new Thread(r)
         t.setDaemon(daemonic)
-        t.setUncaughtExceptionHandler((t: Thread, e: Throwable) => {
+        t.setUncaughtExceptionHandler { (t: Thread, e: Throwable) =>
           onError(t, e)
-        })
+        }
         t.setName(s"$name-${t.getId}")
         t
       }
@@ -37,17 +37,15 @@ object ExecutionContexts {
     Resource.make(Sync[F].delay(f(tp)))(es => Sync[F].delay(es.shutdown()))
   }
 
-  def io[F[_]: Sync](name: String): Resource[F, ExecutionContext] = {
+  def io[F[_]: Sync](name: String): Resource[F, ExecutionContext] =
     executorServiceResource(name, daemonic = true)(Executors.newCachedThreadPool)
       .map(ExecutionContext.fromExecutor(_))
-  }
 
   def bounded[F[_]: Sync](
-      name: String,
-      threadsN: Int,
-      daemonic: Boolean
-  ): Resource[F, ExecutionContext] = {
+    name: String,
+    threadsN: Int,
+    daemonic: Boolean
+  ): Resource[F, ExecutionContext] =
     executorServiceResource(name, daemonic)(Executors.newFixedThreadPool(threadsN, _))
       .map(ExecutionContext.fromExecutor(_))
-  }
 }

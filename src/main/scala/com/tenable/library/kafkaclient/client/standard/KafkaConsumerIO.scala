@@ -6,7 +6,7 @@ import cats.effect._
 import cats.syntax.apply._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import cats.effect.concurrent.{MVar, MVar2}
+import cats.effect.concurrent.{ MVar, MVar2 }
 import com.tenable.library.kafkaclient.client.standard.consumer.{
   ConsumerStateHandler,
   KafkaRunLoop,
@@ -14,9 +14,9 @@ import com.tenable.library.kafkaclient.client.standard.consumer.{
   State
 }
 import org.apache.kafka.clients.consumer._
-import org.apache.kafka.common.{PartitionInfo, TopicPartition}
+import org.apache.kafka.common.{ PartitionInfo, TopicPartition }
 import org.apache.kafka.common.serialization.Deserializer
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.{ Logger, LoggerFactory }
 
 import scala.jdk.CollectionConverters._
 import scala.concurrent.ExecutionContext
@@ -67,22 +67,22 @@ object KafkaConsumerIO {
     CreatedEmpty with WithKeyDeserializer with WithValueDeserializer
 
   class Builder[
-      T <: BuilderState,
-      F[_]: ConcurrentEffect: ContextShift: Timer,
-      K,
-      V
+    T <: BuilderState,
+    F[_]: ConcurrentEffect: ContextShift: Timer,
+    K,
+    V
   ] private[KafkaConsumerIO] (
-      config: KafkaConsumerConfig,
-      keyDeserializer: Option[Deserializer[K]],
-      valueDeserializer: Option[Deserializer[V]],
-      blockingEC: Option[Resource[F, ExecutionContext]],
-      rebalanceListener: KafkaConsumer[K, V] => ConsumerRebalanceListener =
-        (_: KafkaConsumer[K, V]) => new NoOpConsumerRebalanceListener
+    config: KafkaConsumerConfig,
+    keyDeserializer: Option[Deserializer[K]],
+    valueDeserializer: Option[Deserializer[V]],
+    blockingEC: Option[Resource[F, ExecutionContext]],
+    rebalanceListener: KafkaConsumer[K, V] => ConsumerRebalanceListener = (_: KafkaConsumer[K, V]) =>
+      new NoOpConsumerRebalanceListener
   ) {
     type OngoingBuilder[TT <: BuilderState] = Builder[TT, F, K, V]
 
     def withKeyDeserializer(
-        keyDeserializer: Deserializer[K]
+      keyDeserializer: Deserializer[K]
     ): OngoingBuilder[T with WithKeyDeserializer] =
       new Builder[T with WithKeyDeserializer, F, K, V](
         config,
@@ -93,7 +93,7 @@ object KafkaConsumerIO {
       )
 
     def withValueDeserializer(
-        valueDeserializer: Deserializer[V]
+      valueDeserializer: Deserializer[V]
     ): OngoingBuilder[T with WithValueDeserializer] =
       new Builder[T with WithValueDeserializer, F, K, V](
         config,
@@ -134,38 +134,38 @@ object KafkaConsumerIO {
   }
 
   def builder[F[_]: ConcurrentEffect: ContextShift: Timer, K, V](
-      config: KafkaConsumerConfig
+    config: KafkaConsumerConfig
   ): Builder[CreatedEmpty, F, K, V] =
     new Builder[CreatedEmpty, F, K, V](config, None, None, None)
 
   private def resource[F[_]: ConcurrentEffect: ContextShift: Timer, K, V](
-      config: KafkaConsumerConfig,
-      keyDeserializer: Deserializer[K],
-      valueDeserializer: Deserializer[V],
-      optionalBlockingEC: Option[Resource[F, ExecutionContext]],
-      rebalanceListener: KafkaConsumer[K, V] => ConsumerRebalanceListener
+    config: KafkaConsumerConfig,
+    keyDeserializer: Deserializer[K],
+    valueDeserializer: Deserializer[V],
+    optionalBlockingEC: Option[Resource[F, ExecutionContext]],
+    rebalanceListener: KafkaConsumer[K, V] => ConsumerRebalanceListener
   ): Resource[F, KafkaConsumerIO[F, K, V]] =
     for {
       ec <- optionalBlockingEC.getOrElse(ExecutionContexts.io(s"kafka-consumer"))
       consumer <- Resource.make(
-                    create[F, K, V](
-                      config,
-                      keyDeserializer,
-                      valueDeserializer,
-                      ec,
-                      rebalanceListener
-                    )
-                  )(
-                    _.close()
-                  )
+        create[F, K, V](
+          config,
+          keyDeserializer,
+          valueDeserializer,
+          ec,
+          rebalanceListener
+        )
+      )(
+        _.close()
+      )
     } yield consumer
 
   private def create[F[_]: ConcurrentEffect: ContextShift: Timer, K, V](
-      config: KafkaConsumerConfig,
-      keyDeserializer: Deserializer[K],
-      valueDeserializer: Deserializer[V],
-      blockingEC: ExecutionContext,
-      rebalanceListener: KafkaConsumer[K, V] => ConsumerRebalanceListener
+    config: KafkaConsumerConfig,
+    keyDeserializer: Deserializer[K],
+    valueDeserializer: Deserializer[V],
+    blockingEC: ExecutionContext,
+    rebalanceListener: KafkaConsumer[K, V] => ConsumerRebalanceListener
   ): F[KafkaConsumerIO[F, K, V]] = {
     implicit val logger: Logger =
       LoggerFactory.getLogger(s"kafka-io-${config.clientId}".replace('.', '-'))
@@ -200,14 +200,13 @@ object KafkaConsumerIO {
 
   // scalastyle:off method.length
   private def apply[F[_]: ConcurrentEffect: Timer, K, V](
-      stateHandler: ConsumerStateHandler[F, K, V]
+    stateHandler: ConsumerStateHandler[F, K, V]
   )(implicit logger: Logger): KafkaConsumerIO[F, K, V] = new KafkaConsumerIO[F, K, V] {
     private val F = ConcurrentEffect[F]
 
     override val clientId: String = stateHandler.clientId
 
-    override def pollForever
-        : KafkaRunLoop.Builder[KafkaRunLoop.CreatedEmpty, F, K, V, Nothing, Nothing] =
+    override def pollForever: KafkaRunLoop.Builder[KafkaRunLoop.CreatedEmpty, F, K, V, Nothing, Nothing] =
       KafkaRunLoop.builder(this)
 
     override def rawPoll(timeout: Duration): F[ConsumerRecords[K, V]] =
@@ -285,9 +284,11 @@ object KafkaConsumerIO {
     override def commitSync(offsets: Map[TopicPartition, Long]): F[Unit] =
       stateHandler.withConsumer("batch-commit") { state =>
         F.delay {
-          state.consumer.commitSync(
-            offsets.view.mapValues(o => new OffsetAndMetadata(o)).toMap.asJava
-          )
+          state
+            .consumer
+            .commitSync(
+              offsets.view.mapValues(o => new OffsetAndMetadata(o)).toMap.asJava
+            )
           (state, ())
         }
       }
@@ -296,7 +297,8 @@ object KafkaConsumerIO {
     override def commitAsync(offsets: Map[TopicPartition, Long]): F[Unit] =
       stateHandler.withConsumer("batch-commit-async") { state =>
         F.delay {
-          state.consumer
+          state
+            .consumer
             .commitAsync(
               offsets.view.mapValues(o => new OffsetAndMetadata(o)).toMap.asJava,
               null
@@ -315,27 +317,26 @@ object KafkaConsumerIO {
 
     override def listTopics(duration: Duration): F[Map[String, List[PartitionInfo]]] =
       stateHandler
-        .withConsumer("list-topics-by-duration", Some(s"Listing all topics for $duration")) {
-          state =>
-            F.delay {
-              (
-                state,
-                state.consumer
-                  .listTopics(duration.asJavaDuration)
-                  .asScala
-                  .view
-                  .mapValues(_.asScala.toList)
-                  .toMap
-              )
-            }
+        .withConsumer("list-topics-by-duration", Some(s"Listing all topics for $duration")) { state =>
+          F.delay {
+            (
+              state,
+              state
+                .consumer
+                .listTopics(duration.asJavaDuration)
+                .asScala
+                .view
+                .mapValues(_.asScala.toList)
+                .toMap
+            )
+          }
         }
 
     override def position(topicPartition: TopicPartition): F[Long] =
-      stateHandler.withConsumer("position", Some(s"Getting position for $topicPartition")) {
-        state =>
-          F.delay {
-            (state, state.consumer.position(topicPartition))
-          }
+      stateHandler.withConsumer("position", Some(s"Getting position for $topicPartition")) { state =>
+        F.delay {
+          (state, state.consumer.position(topicPartition))
+        }
       }
 
     override def position(topicPartition: TopicPartition, duration: Duration): F[Long] =
@@ -351,17 +352,16 @@ object KafkaConsumerIO {
     @nowarn // FIXME: committed is deprecated
     override def committed(topicPartition: TopicPartition): F[OffsetAndMetadata] =
       stateHandler
-        .withConsumer("committed", Some(s"Getting committed offsets for $topicPartition")) {
-          state =>
-            F.delay {
-              (state, state.consumer.committed(topicPartition))
-            }
+        .withConsumer("committed", Some(s"Getting committed offsets for $topicPartition")) { state =>
+          F.delay {
+            (state, state.consumer.committed(topicPartition))
+          }
         }
 
     @nowarn // FIXME: committed is deprecated
     override def committed(
-        topicPartition: TopicPartition,
-        duration: Duration
+      topicPartition: TopicPartition,
+      duration: Duration
     ): F[OffsetAndMetadata] =
       stateHandler.withConsumer(
         "committed-by-duration",
@@ -387,25 +387,23 @@ object KafkaConsumerIO {
       }
 
     override def seekToEnd(topicPartitions: List[TopicPartition]): F[Unit] =
-      stateHandler.withConsumer("seek-to-end", Some(s"Seeking to end for $topicPartitions")) {
-        state =>
-          F.delay {
-            (state, state.consumer.seekToEnd(topicPartitions.asJava))
-          }
+      stateHandler.withConsumer("seek-to-end", Some(s"Seeking to end for $topicPartitions")) { state =>
+        F.delay {
+          (state, state.consumer.seekToEnd(topicPartitions.asJava))
+        }
       }
 
     override def seekToBeginning(topicPartitions: List[TopicPartition]): F[Unit] =
       stateHandler
-        .withConsumer("seek-to-beginning", Some(s"Seeking to beginning for $topicPartitions")) {
-          state =>
-            F.delay {
-              (state, state.consumer.seekToBeginning(topicPartitions.asJava))
-            }
+        .withConsumer("seek-to-beginning", Some(s"Seeking to beginning for $topicPartitions")) { state =>
+          F.delay {
+            (state, state.consumer.seekToBeginning(topicPartitions.asJava))
+          }
         }
 
     override def seekWithError(
-        offsets: Map[TopicPartition, Long],
-        error: Option[String]
+      offsets: Map[TopicPartition, Long],
+      error: Option[String]
     ): F[Unit] =
       stateHandler.withConsumer("batch-seek-with-error") { state =>
         F.delay {
