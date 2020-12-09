@@ -6,7 +6,6 @@ import cats.syntax.foldable._
 import cats.syntax.semigroup._
 import cats.instances.list._
 import cats.{Monad, Monoid}
-import com.github.ghik.silencer.silent
 import com.tenable.library.kafkaclient.client.standard.KafkaConsumerIO
 import com.tenable.library.kafkaclient.client.standard.consumer.{
   BatchContext,
@@ -97,7 +96,6 @@ object ProcessAction {
       case s @ SingleAction(_, _) => doInterpret[F](kafkaIO, s, offsets)
     }
 
-  @silent
   private def doInterpret[F[_]: Monad](
       kIO: KafkaConsumerIO[F, _, _],
       action: SingleAction,
@@ -119,7 +117,7 @@ object ProcessAction {
       case SingleAction(Commit(Some(except)), None) =>
         kIO
           .commitSync(
-            offsets.filterNot { case (tp, _) => except.contains(tp) }.mapValues(_.commit).toMap
+            offsets.filterNot { case (tp, _) => except.contains(tp) }.view.mapValues(_.commit).toMap
           )
           .as(BatchContext.empty)
       case SingleAction(Commit(Some(except)), Some(tp)) =>
@@ -128,28 +126,28 @@ object ProcessAction {
           .as(BatchContext.empty)
 
       case SingleAction(Commit(None), None) =>
-        kIO.commitSync(offsets.mapValues(_.commit).toMap).as(BatchContext.empty)
+        kIO.commitSync(offsets.view.mapValues(_.commit).toMap).as(BatchContext.empty)
       case SingleAction(Commit(None), Some(tp)) =>
         kIO.commitSync(commitUsing(tp)).as(BatchContext.empty)
 
       case SingleAction(Reject(error, None), None) =>
-        val offsetsR = offsets.mapValues(_.reject).toMap
+        val offsetsR = offsets.view.mapValues(_.reject).toMap
         kIO.seekWithError(offsetsR, error).as(BatchContext(offsetsR.keySet))
       case SingleAction(Reject(error, None), Some(tp)) =>
         val offsetsR = rejectUsing(tp)
         kIO.seekWithError(offsetsR, error).as(BatchContext(offsetsR.keySet))
 
       case SingleAction(Reject(error, Some(pauseDetails)), None) =>
-        val offsetsR = offsets.mapValues(_.reject).toMap
+        val offsetsR = offsets.view.mapValues(_.reject).toMap
         for {
           _ <- kIO.seekWithError(offsetsR, error)
-          _ <- kIO.pause(offsetsR.mapValues(_ => pauseDetails).toMap)
+          _ <- kIO.pause(offsetsR.view.mapValues(_ => pauseDetails).toMap)
         } yield BatchContext(offsetsR.keySet)
       case SingleAction(Reject(error, Some(pauseDetails)), Some(tp)) =>
         val offsetsR = rejectUsing(tp)
         for {
           _ <- kIO.seekWithError(offsetsR, error)
-          _ <- kIO.pause(offsetsR.mapValues(_ => pauseDetails).toMap)
+          _ <- kIO.pause(offsetsR.view.mapValues(_ => pauseDetails).toMap)
         } yield BatchContext(offsetsR.keySet)
     }
   }

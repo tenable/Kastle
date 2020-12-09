@@ -7,19 +7,13 @@ import cats.syntax.apply._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.effect.concurrent.{MVar, MVar2}
-import com.github.ghik.silencer.silent
-import com.tenable.library.kafkaclient.client.standard.consumer.{
-  ConsumerStateHandler,
-  KafkaRunLoop,
-  PausedTemporarily,
-  State
-}
+import com.tenable.library.kafkaclient.client.standard.consumer.{ConsumerStateHandler, KafkaRunLoop, PausedTemporarily, State}
 import org.apache.kafka.clients.consumer._
 import org.apache.kafka.common.{PartitionInfo, TopicPartition}
 import org.apache.kafka.common.serialization.Deserializer
 import org.slf4j.{Logger, LoggerFactory}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import com.tenable.library.kafkaclient.utils.ExecutionContexts
@@ -27,7 +21,8 @@ import com.tenable.library.kafkaclient.utils.Converters.JavaDurationOps
 import com.tenable.library.kafkaclient.config.KafkaConsumerConfig
 import org.apache.kafka.clients.consumer.internals.NoOpConsumerRebalanceListener
 
-@silent
+import scala.annotation.nowarn
+
 trait KafkaConsumerIO[F[_], K, V] {
   val clientId: String
 
@@ -160,7 +155,6 @@ object KafkaConsumerIO {
                   )
     } yield consumer
 
-  @silent
   private def create[F[_]: ConcurrentEffect: ContextShift: Timer, K, V](
       config: KafkaConsumerConfig,
       keyDeserializer: Deserializer[K],
@@ -199,7 +193,6 @@ object KafkaConsumerIO {
       .map(apply[F, K, V])
   }
 
-  @silent
   // scalastyle:off method.length
   private def apply[F[_]: ConcurrentEffect: Timer, K, V](
       stateHandler: ConsumerStateHandler[F, K, V]
@@ -287,7 +280,7 @@ object KafkaConsumerIO {
     override def commitSync(offsets: Map[TopicPartition, Long]): F[Unit] =
       stateHandler.withConsumer("batch-commit") { state =>
         F.delay {
-          state.consumer.commitSync(offsets.mapValues(o => new OffsetAndMetadata(o)).toMap.asJava)
+          state.consumer.commitSync(offsets.view.mapValues(o => new OffsetAndMetadata(o)).toMap.asJava)
           (state, ())
         }
       }
@@ -297,7 +290,7 @@ object KafkaConsumerIO {
         F.delay {
           state.consumer
             .commitAsync(
-              offsets.mapValues(o => new OffsetAndMetadata(o)).toMap.asJava,
+              offsets.view.mapValues(o => new OffsetAndMetadata(o)).toMap.asJava,
               null
             ) // scalastyle:off null
           (state, ())
@@ -308,7 +301,7 @@ object KafkaConsumerIO {
     override def listTopics(): F[Map[String, List[PartitionInfo]]] =
       stateHandler.withConsumer("list-topics", Some(s"Listing all topics")) { state =>
         F.delay {
-          (state, state.consumer.listTopics().asScala.mapValues(_.asScala.toList).toMap)
+          (state, state.consumer.listTopics().asScala.view.mapValues(_.asScala.toList).toMap)
         }
       }
 
@@ -322,6 +315,7 @@ object KafkaConsumerIO {
                 state.consumer
                   .listTopics(duration.asJavaDuration)
                   .asScala
+                  .view
                   .mapValues(_.asScala.toList)
                   .toMap
               )
@@ -346,6 +340,7 @@ object KafkaConsumerIO {
         }
       }
 
+    @nowarn
     override def committed(topicPartition: TopicPartition): F[OffsetAndMetadata] =
       stateHandler
         .withConsumer("committed", Some(s"Getting committed offsets for $topicPartition")) {
@@ -355,6 +350,7 @@ object KafkaConsumerIO {
             }
         }
 
+    @nowarn
     override def committed(
         topicPartition: TopicPartition,
         duration: Duration

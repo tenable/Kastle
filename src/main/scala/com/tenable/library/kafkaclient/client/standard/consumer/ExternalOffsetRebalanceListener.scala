@@ -6,11 +6,9 @@ import org.apache.kafka.clients.consumer.ConsumerRebalanceListener
 import java.{util => ju}
 import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.clients.consumer.KafkaConsumer
-import com.github.ghik.silencer.silent
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import cats.effect.ConcurrentEffect
 
-@silent
 class ExternalOffsetRebalanceListener[F[_]: ConcurrentEffect](
     consumer: KafkaConsumer[_, _],
     findOffsets: Set[TopicPartition] => F[Map[TopicPartition, Option[Long]]]

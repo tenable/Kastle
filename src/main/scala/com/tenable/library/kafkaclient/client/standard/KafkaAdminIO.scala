@@ -4,7 +4,6 @@ import java.util.concurrent.TimeUnit
 
 import cats.effect._
 import cats.implicits._
-import com.github.ghik.silencer.silent
 import com.tenable.library.kafkaclient.utils.ExecutionContexts
 import com.tenable.library.kafkaclient.config.KafkaAdminConfig
 import com.tenable.library.kafkaclient.config.TopicDefinitionDetails
@@ -14,7 +13,7 @@ import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.config.ConfigResource
 import org.apache.kafka.common.security.token.delegation.DelegationToken
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.{Duration, DurationInt}
 
@@ -118,7 +117,6 @@ object KafkaAdminIO {
       apply(admin, blockingEC, timeout)
     }
 
-  @silent
   // scalastyle:off method.length
   private def apply[F[_]: Async: ContextShift](
       admin: AdminClient,
@@ -134,7 +132,7 @@ object KafkaAdminIO {
           val topics = topicDefinitions
             .map(td =>
               new NewTopic(td.name, td.partitions, td.replicationFactor)
-                .configs(mapAsJavaMap(td.properties))
+                .configs(td.properties.asJava)
             )
             .asJava
 

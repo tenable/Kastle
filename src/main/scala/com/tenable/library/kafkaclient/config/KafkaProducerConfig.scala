@@ -3,13 +3,14 @@ package com.tenable.library.kafkaclient.config
 import java.util.Properties
 
 import cats.implicits._
-import com.github.ghik.silencer.silent
 import org.apache.kafka.clients.producer.ProducerConfig
 
 import scala.concurrent.duration._
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.collection.Map
 import scala.util.Random
+
+import scala.annotation.nowarn
 
 sealed abstract class AckStrategy(private[config] val configValue: String) {
   override def toString: String = configValue
@@ -42,7 +43,7 @@ case class KafkaProducerConfig(
     ] //properties in here override ones set by above variables
 ) {
 
-  @silent
+  @nowarn
   def properties[K, V]: Properties = {
     val props = new Properties
     props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, connectionString)
@@ -62,7 +63,6 @@ case class KafkaProducerConfig(
 }
 
 object KafkaProducerConfig {
-  @silent
   def apply(
       connectionString: String,
       ackStrategy: AckStrategy,

@@ -16,9 +16,8 @@ import cats.effect.Resource
 import org.apache.kafka.common.PartitionInfo
 
 import scala.concurrent.duration.Duration
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import cats.effect.Async
-import com.github.ghik.silencer.silent
 
 trait KafkaProducerIO[F[_], K, V] { self =>
 
@@ -264,7 +263,6 @@ object KafkaProducerIO {
         producer.close(java.time.Duration.ofNanos(timeout.toNanos))
       }
 
-    @silent
     override def partitionsFor(topicName: String): F[List[PartitionInfo]] =
       CS.evalOn(blockingEC) {
         F.delay(producer.partitionsFor(topicName).asScala.toList)

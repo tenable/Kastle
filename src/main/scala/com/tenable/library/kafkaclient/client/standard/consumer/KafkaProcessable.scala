@@ -6,7 +6,6 @@ import cats.instances.option._
 import cats.syntax.functor._
 import cats.syntax.monoid._
 import cats.{Eval, Monad, Now, ~>}
-import com.github.ghik.silencer.silent
 import com.tenable.library.kafkaclient.client.standard.consumer.units.TPBatch.TPRecords
 import com.tenable.library.kafkaclient.client.standard.consumer.units.{
   FullBatch,
@@ -16,7 +15,7 @@ import com.tenable.library.kafkaclient.client.standard.consumer.units.{
 import org.apache.kafka.clients.consumer.{ConsumerRecord, ConsumerRecords}
 import org.apache.kafka.common.TopicPartition
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 trait KafkaProcessable[G[_, _]] {
   type Ref
@@ -33,7 +32,6 @@ trait KafkaProcessable[G[_, _]] {
   def shouldFilter[K, V](g: G[K, V], ctx: BatchContext): Boolean
 }
 
-@silent
 object KafkaProcessable {
   def apply[G[_, _]](implicit KP: KafkaProcessable[G]): KafkaProcessable[G] = KP
 

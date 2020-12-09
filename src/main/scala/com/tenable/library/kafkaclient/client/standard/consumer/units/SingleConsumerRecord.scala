@@ -1,18 +1,16 @@
 package com.tenable.library.kafkaclient.client.standard.consumer.units
 
-import com.github.ghik.silencer.silent
 import com.tenable.library.kafkaclient.client.standard.consumer._
 import org.apache.kafka.clients.consumer.{ConsumerRecord, ConsumerRecords}
 import org.apache.kafka.common.TopicPartition
 
 import scala.collection.mutable
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object SingleConsumerRecord {
   val kafkaProcessable: KafkaProcessable[ConsumerRecord] = new KafkaProcessable[ConsumerRecord] {
     override type Ref = ((TopicPartition, Int), mutable.Set[TopicPartition])
 
-    @silent
     def last[K, V](crs: ConsumerRecords[K, V]): Option[Ref] = {
       val partitions = crs.partitions().asScala
 

@@ -1,11 +1,10 @@
 package com.tenable.library.kafkaclient.client.standard.consumer.units
 
-import com.github.ghik.silencer.silent
 import com.tenable.library.kafkaclient.client.standard.consumer._
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.common.TopicPartition
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object FullBatch {
   val kafkaProcessable: KafkaProcessable[ConsumerRecords] = new KafkaProcessable[ConsumerRecords] {
@@ -14,7 +13,6 @@ object FullBatch {
     def last[K, V](consumerRecords: ConsumerRecords[K, V]): Option[Ref]               = Some(())
     def previous[K, V](consumerRecords: ConsumerRecords[K, V], ref: Ref): Option[Ref] = None
 
-    @silent
     def gAtRef[K, V](
         consumerRecords: ConsumerRecords[K, V],
         ref: Ref

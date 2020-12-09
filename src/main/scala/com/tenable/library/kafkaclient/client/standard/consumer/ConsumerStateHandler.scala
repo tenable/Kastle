@@ -8,13 +8,12 @@ import cats.syntax.applicativeError._
 import cats.syntax.apply._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import com.github.ghik.silencer.silent
 import com.tenable.library.kafkaclient.utils.Converters.JavaDurationOps
 import org.apache.kafka.clients.consumer.{Consumer, CommitFailedException}
 import org.apache.kafka.common.TopicPartition
 import org.slf4j.Logger
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.util.control.NonFatal
@@ -52,7 +51,6 @@ private[standard] class ConsumerStateHandler[F[_]: ConcurrentEffect: ContextShif
       }
     }
 
-  @silent
   def unsafeStart(pausedTopics: Set[String]): F[Unit] =
     for {
       _ <- F.delay(logger.info(s"Starting consumer $clientId"))
@@ -143,7 +141,6 @@ private[standard] class ConsumerStateHandler[F[_]: ConcurrentEffect: ContextShif
     }.map(_.cancel)
   }
 
-  @silent
   def refreshTemporarilyPaused(): F[Unit] =
     withConsumer("refresh-temp-paused") { state =>
       val toAwaken = findPartitionsToAwaken(state)
