@@ -1,6 +1,5 @@
 package com.tenable.library.kafkaclient.client.standard.consumer.units
 
-import com.github.ghik.silencer.silent
 import com.tenable.library.kafkaclient.client.standard.consumer.{
   BatchContext,
   GOffsets,
@@ -9,11 +8,10 @@ import com.tenable.library.kafkaclient.client.standard.consumer.{
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.common.TopicPartition
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-@silent
 class FullBatchSpec extends AnyFlatSpec with Matchers {
 
   "FullBatchSpec.last" should "always return Some" in {

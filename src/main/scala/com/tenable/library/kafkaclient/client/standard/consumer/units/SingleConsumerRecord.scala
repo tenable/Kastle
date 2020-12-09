@@ -1,18 +1,16 @@
 package com.tenable.library.kafkaclient.client.standard.consumer.units
 
-import com.github.ghik.silencer.silent
 import com.tenable.library.kafkaclient.client.standard.consumer._
 import org.apache.kafka.clients.consumer.{ConsumerRecord, ConsumerRecords}
 import org.apache.kafka.common.TopicPartition
 
 import scala.collection.mutable
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object SingleConsumerRecord {
   val kafkaProcessable: KafkaProcessable[ConsumerRecord] = new KafkaProcessable[ConsumerRecord] {
     override type Ref = ((TopicPartition, Int), mutable.Set[TopicPartition])
 
-    @silent
     def last[K, V](crs: ConsumerRecords[K, V]): Option[Ref] = {
       val partitions = crs.partitions().asScala
 
@@ -25,7 +23,10 @@ object SingleConsumerRecord {
       val ((tp, idx), remainingTp) = ref
       if (idx - 1 < 0) {
         remainingTp.find(otherTp => !crs.records(otherTp).isEmpty).map { newTp =>
-          ((newTp, crs.records(newTp).size() - 1), remainingTp.filterNot(_ == newTp)) //Using `--` (that uses hashCode) has some funky results. Avoid!
+          (
+            (newTp, crs.records(newTp).size() - 1),
+            remainingTp.filterNot(_ == newTp)
+          ) //Using `--` (that uses hashCode) has some funky results. Avoid!
         }
       } else {
         Some(((tp, idx - 1), remainingTp))

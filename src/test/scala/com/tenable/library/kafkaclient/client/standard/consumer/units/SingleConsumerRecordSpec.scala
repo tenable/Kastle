@@ -1,6 +1,5 @@
 package com.tenable.library.kafkaclient.client.standard.consumer.units
 
-import com.github.ghik.silencer.silent
 import com.tenable.library.kafkaclient.client.standard.consumer.{
   BatchContext,
   GOffsets,
@@ -9,12 +8,11 @@ import com.tenable.library.kafkaclient.client.standard.consumer.{
 import org.apache.kafka.clients.consumer.{ConsumerRecord, ConsumerRecords}
 import org.apache.kafka.common.TopicPartition
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.collection.mutable
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-@silent
 class SingleConsumerRecordSpec extends AnyFlatSpec with Matchers {
 
   "SingleConsumerRecord.last" should "return None if consumer records is empty" in {
@@ -61,9 +59,9 @@ class SingleConsumerRecordSpec extends AnyFlatSpec with Matchers {
     List(
       List(last.get, next1.get, next2.get, next3.get, next4.get, next5.get, next6.get) //Have to wrap the List in a List to use the oneOf
         .map(_.asInstanceOf[((TopicPartition, Int), mutable.Set[TopicPartition])]._1)
-    ) should contain oneOf (
-      List((tp1, 2), (tp1, 1), (tp1, 0), (tp2, 3), (tp2, 2), (tp2, 1), (tp2, 0)),
-      List((tp2, 3), (tp2, 2), (tp2, 1), (tp2, 0), (tp1, 2), (tp1, 1), (tp1, 0))
+    ) should contain.oneOf(
+      firstEle = List((tp1, 2), (tp1, 1), (tp1, 0), (tp2, 3), (tp2, 2), (tp2, 1), (tp2, 0)),
+      secondEle = List((tp2, 3), (tp2, 2), (tp2, 1), (tp2, 0), (tp1, 2), (tp1, 1), (tp1, 0))
     )
 
     noneExpected shouldBe empty

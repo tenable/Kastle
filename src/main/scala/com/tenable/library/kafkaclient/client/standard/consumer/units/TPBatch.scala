@@ -1,20 +1,18 @@
 package com.tenable.library.kafkaclient.client.standard.consumer.units
 
 import cats.data.NonEmptyList
-import com.github.ghik.silencer.silent
 import com.tenable.library.kafkaclient.client.standard.consumer._
 import org.apache.kafka.clients.consumer.{ConsumerRecord, ConsumerRecords}
 import org.apache.kafka.common.TopicPartition
 
 import scala.collection.mutable
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object TPBatch {
   type TPRecords[K, V] = (TopicPartition, NonEmptyList[ConsumerRecord[K, V]])
   implicit val kafkaProcessable: KafkaProcessable[TPRecords] = new KafkaProcessable[TPRecords] {
     override type Ref = (TopicPartition, mutable.Set[TopicPartition])
 
-    @silent
     def last[K, V](crs: ConsumerRecords[K, V]): Option[Ref] = {
       val partitions = crs.partitions().asScala.filterNot(tp => crs.records(tp).isEmpty)
       partitions.headOption.map((_, partitions.tail))
@@ -24,7 +22,6 @@ object TPBatch {
       ref._2.headOption.map((_, ref._2.tail))
     }
 
-    @silent
     def gAtRef[K, V](
         crs: ConsumerRecords[K, V],
         ref: Ref

@@ -34,10 +34,8 @@ lazy val kastle = (project in file("."))
   .settings(publishSettings)
   .settings(
     name := "kastle",
-    addCompilerPlugin(silencerPlugin),
     addCompilerPlugin(kindProjector),
     libraryDependencies ++= Seq(
-      silencerPlugin,
       slf4jApi,
       catsCore,
       catsFree,
