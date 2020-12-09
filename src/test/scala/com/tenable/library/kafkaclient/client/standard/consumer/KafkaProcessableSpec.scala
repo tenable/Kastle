@@ -34,16 +34,16 @@ class KafkaProcessableSpec extends AnyFlatSpec with Matchers {
       def last[K, V](consumerRecords: ConsumerRecords[K, V]): Option[Ref] = {
         val sorted = sort(consumerRecords)
         val size   = sorted.size
-        if (consumerRecords.isEmpty) None
-        else Some(TestRecordRef(size - 1, consumerRecords.records(sorted(size - 1)._1).size() - 1))
+        if (consumerRecords.isEmpty) { None }
+        else { Some(TestRecordRef(size - 1, consumerRecords.records(sorted(size - 1)._1).size() - 1)) }
       }
 
       def previous[K, V](consumerRecords: ConsumerRecords[K, V], ref: Ref): Option[Ref] = {
         val sorted = sort(consumerRecords)
 
-        if (ref.index - 1 >= 0) Some(TestRecordRef(ref.topicPartitionIndex, ref.index - 1))
+        if (ref.index - 1 >= 0) { Some(TestRecordRef(ref.topicPartitionIndex, ref.index - 1)) }
         else {
-          if (ref.topicPartitionIndex - 1 < 0) None
+          if (ref.topicPartitionIndex - 1 < 0) { None }
           else {
             Some(
               TestRecordRef(
@@ -132,9 +132,9 @@ class KafkaProcessableSpec extends AnyFlatSpec with Matchers {
         batch,
         { case (g, _) =>
           StateT.apply[IO, ArrayBuffer[String], BatchContext] { s =>
-            if (g.consumerRecord.topic() == "tA" && g.consumerRecord.offset() == 0)
+            if (g.consumerRecord.topic() == "tA" && g.consumerRecord.offset() == 0) {
               IO.pure((s, BatchContext(Set(new TopicPartition("tA", 1)))))
-            else IO.pure((s.+=(g.consumerRecord.value()), BatchContext.empty))
+            } else { IO.pure((s.+=(g.consumerRecord.value()), BatchContext.empty)) }
           }
         }
       )

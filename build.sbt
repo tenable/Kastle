@@ -31,6 +31,7 @@ lazy val kastle = (project in file("."))
   .settings(
     name := "kastle",
     addCompilerPlugin(kindProjector),
+    scalastyleFailOnWarning := true,
     libraryDependencies ++= Seq(
       slf4jApi,
       catsCore,
@@ -97,3 +98,4 @@ lazy val site = project
 
 addCommandAlias("format", ";scalafmtAll;scalafmtSbt")
 addCommandAlias("formatCheck", ";scalafmtCheckAll;scalafmtSbtCheck")
+addCommandAlias("styleCheck", ";scalastyle;test:scalastyle;it:scalastyle")

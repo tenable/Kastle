@@ -98,7 +98,7 @@
             <parameter default="TODO|FIXME" type="string" name="words"/>
         </parameters>
     </checker>
-    <check enabled="true" class="org.scalastyle.scalariform.TokenChecker" level="warning">
+    <check enabled="false" class="org.scalastyle.scalariform.TokenChecker" level="warning">
         <parameters>
             <!-- original rule: <parameter name="regex">^[ai]sInstanceOf$</parameter> -->
             <parameter name="regex">^asInstanceOf$</parameter>

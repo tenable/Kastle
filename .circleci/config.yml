@@ -23,7 +23,7 @@ jobs:
       - checkout
       - restore_cache:
           <<: *dependencies
-      - run: cat /dev/null | sbt compile test:compile
+      - run: cat /dev/null | sbt compile test:compile formatCheck styleCheck
       - save_cache:
           paths:
             - ~/.m2
