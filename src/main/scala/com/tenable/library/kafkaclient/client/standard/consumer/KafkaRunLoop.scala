@@ -20,8 +20,8 @@ import scala.util.Try
 
 class KafkaRunLoop[F[_]: ConcurrentEffect, K, V] private (
     consumer: KafkaConsumerIO[F, K, V]
-)(
-    implicit T: Timer[F]
+)(implicit
+    T: Timer[F]
 ) { self =>
   private val F: ConcurrentEffect[F] = ConcurrentEffect[F]
   private val logger: Logger =
@@ -44,17 +44,15 @@ class KafkaRunLoop[F[_]: ConcurrentEffect, K, V] private (
     val pollingF = consumer
       .poll(pollTimeout)(KafkaProcessable.build[K, V, G])
       .flatMap {
-        _.fold(T.sleep(500.millis)) {
-          case (rejectOffsets, batchG) =>
-            KafkaProcessable.run[F, K, V, G](batchG, runG).recoverWith {
-              case err: KafkaException =>
-                F.pure(logger.warn("Exception when handling kafka processable:", err)) *>
-                  consumer.seekWithError(rejectOffsets, None)
-            }
+        _.fold(T.sleep(500.millis)) { case (rejectOffsets, batchG) =>
+          KafkaProcessable.run[F, K, V, G](batchG, runG).recoverWith { case err: KafkaException =>
+            F.pure(logger.warn("Exception when handling kafka processable:", err)) *>
+              consumer.seekWithError(rejectOffsets, None)
+          }
         }
       }
-      .recoverWith {
-        case t => T.sleep(500.millis) *> consumer.restartOnError(t)
+      .recoverWith { case t =>
+        T.sleep(500.millis) *> consumer.restartOnError(t)
       }
 
     F.start(pollingF.foreverM[Unit]).map(_.cancel)
@@ -69,18 +67,24 @@ object KafkaRunLoop {
 
   type Initialized = WithActionHandler with WithGranularity with CreatedEmpty
 
-  class Builder[T <: BuilderState, F[_]: ConcurrentEffect: Timer, K, V, G[_, _], A] private[KafkaRunLoop] (
+  class Builder[
+      T <: BuilderState,
+      F[_]: ConcurrentEffect: Timer,
+      K,
+      V,
+      G[_, _],
+      A
+  ] private[KafkaRunLoop] (
       consumer: KafkaConsumerIO[F, K, V],
       granularity: Option[KafkaProcessable[G]],
       actionHandler: Option[EventActionable[A]]
   ) {
     type OngoingBuilder[TT <: BuilderState, GG[_, _], AA] = Builder[TT, F, K, V, GG, AA]
 
-    /**
-      * Define how the source batch is going to be consumed. E.g: Event by event or Topic partition batch, etc...
+    /** Define how the source batch is going to be consumed. E.g: Event by event or Topic partition batch, etc...
       */
-    def consuming[G1[_, _]](
-        implicit KP: KafkaProcessable[G1]
+    def consuming[G1[_, _]](implicit
+        KP: KafkaProcessable[G1]
     ): OngoingBuilder[T with WithGranularity, G1, A] =
       new Builder[T with WithGranularity, F, K, V, G1, A](
         consumer,
@@ -98,11 +102,10 @@ object KafkaRunLoop {
     def consumingFullBatch: OngoingBuilder[T with WithGranularity, ConsumerRecords, A] =
       consuming[ConsumerRecords](KafkaProcessable.kafkaProcessableFullBatch)
 
-    /**
-      * Define the data (A) to be returned by the process function (G[K, V] => F[A])
+    /** Define the data (A) to be returned by the process function (G[K, V] => F[A])
       */
-    def expecting[A1](
-        implicit EA: EventActionable[A1]
+    def expecting[A1](implicit
+        EA: EventActionable[A1]
     ): OngoingBuilder[T with WithActionHandler, G, A1] =
       new Builder[T with WithActionHandler, F, K, V, G, A1](
         consumer,
@@ -113,16 +116,15 @@ object KafkaRunLoop {
     def expectingEither[E: Show]: OngoingBuilder[T with WithActionHandler, G, Either[E, Unit]] =
       expecting[Either[E, Unit]](EventActionable.deriveFromEither)
 
-    def expectingTry(
-        implicit S: Show[Throwable]
+    def expectingTry(implicit
+        S: Show[Throwable]
     ): OngoingBuilder[T with WithActionHandler, G, Try[Unit]] =
       expecting[Try[Unit]](EventActionable.deriveFromTry)
 
     def expectingProcessAction: OngoingBuilder[T with WithActionHandler, G, ProcessAction] =
       expecting[ProcessAction](EventActionable.deriveFromProcessAction)
 
-    /**
-      * If you want to stop your cancelable processing function if a rebalance occurs
+    /** If you want to stop your cancelable processing function if a rebalance occurs
       */
     def withRebalanceDetector: OngoingBuilder[T, G, A] =
       new Builder[T, F, K, V, G, A](
@@ -131,8 +133,7 @@ object KafkaRunLoop {
         actionHandler
       )
 
-    /**
-      * Runs the consumer loop, which will poll forever until explicitly cancelled
+    /** Runs the consumer loop, which will poll forever until explicitly cancelled
       */
     def run(
         pollTimeout: FiniteDuration

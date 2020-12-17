@@ -18,11 +18,10 @@ import cats.effect.IO
 import cats.syntax.applicativeError._
 import cats.instances.list._
 import cats.syntax.traverse._
-import com.github.ghik.silencer.silent
 import com.tenable.library.kafkaclient.client.standard.KafkaConsumerIO
 import com.tenable.library.kafkaclient.client.standard.consumer.units.TPBatch.TPRecords
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.global
 import com.tenable.library.kafkaclient.config.TopicDefinitionDetails
@@ -46,7 +45,6 @@ class TestPartitioner2Partitions extends Partitioner {
   override def configure(configs: util.Map[String, _]): Unit = ()
 }
 
-@silent
 class KafkaConsumerSpec extends AsyncIntegrationSpec with EmbeddedKafka with BeforeAndAfterAll {
   override implicit val patienceConfig: PatienceConfig =
     PatienceConfig(timeout = 20.seconds, interval = 500.millis)

@@ -1,7 +1,6 @@
 package com.tenable.library.kafkaclient.client.standard
 
 import cats.effect.IO
-import com.github.ghik.silencer.silent
 import com.tenable.library.kafkaclient.testhelpers.{GeneralKafkaHelpers, SyncIntegrationSpec}
 import net.manub.embeddedkafka.EmbeddedKafka
 import org.apache.kafka.clients.admin.{NewPartitions, TopicListing}
@@ -11,7 +10,6 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.DurationInt
 import scala.util.Random
 
-@silent
 class KafkaAdminIOSpec extends SyncIntegrationSpec with EmbeddedKafka with BeforeAndAfterAll {
   import GeneralKafkaHelpers._
   implicit val timer = IO.timer(ExecutionContext.global)
@@ -48,7 +46,7 @@ class KafkaAdminIOSpec extends SyncIntegrationSpec with EmbeddedKafka with Befor
           }
         }
 
-        task.unsafeRunSync
+        task.unsafeRunSync()
       }
 
       "create a topic and then delete it" in {
@@ -68,7 +66,7 @@ class KafkaAdminIOSpec extends SyncIntegrationSpec with EmbeddedKafka with Befor
           }
         }
 
-        task.unsafeRunSync
+        task.unsafeRunSync()
       }
 
       "create a topic with additional config" in {
@@ -87,7 +85,7 @@ class KafkaAdminIOSpec extends SyncIntegrationSpec with EmbeddedKafka with Befor
           }
         }
 
-        task.unsafeRunSync
+        task.unsafeRunSync()
       }
     }
 
@@ -110,7 +108,7 @@ class KafkaAdminIOSpec extends SyncIntegrationSpec with EmbeddedKafka with Befor
           }
         }
 
-        task.unsafeRunSync
+        task.unsafeRunSync()
       }
     }
 
@@ -135,7 +133,7 @@ class KafkaAdminIOSpec extends SyncIntegrationSpec with EmbeddedKafka with Befor
 
         }
 
-        task.unsafeRunSync
+        task.unsafeRunSync()
       }
 
       "describing" in {
@@ -159,11 +157,11 @@ class KafkaAdminIOSpec extends SyncIntegrationSpec with EmbeddedKafka with Befor
           }
         }
 
-        task.unsafeRunSync
+        task.unsafeRunSync()
       }
 
       "getting offsets" in {
-        import scala.collection.JavaConverters._
+        import scala.jdk.CollectionConverters._
 
         val topics = randomTopics(count = 1)
         val groupId =
@@ -191,11 +189,11 @@ class KafkaAdminIOSpec extends SyncIntegrationSpec with EmbeddedKafka with Befor
           }
         }
 
-        task.unsafeRunSync
+        task.unsafeRunSync()
       }
 
       "getting many offsets" in {
-        import scala.collection.JavaConverters._
+        import scala.jdk.CollectionConverters._
 
         val topics = randomTopics(count = 1)
         val groupId =
@@ -234,7 +232,7 @@ class KafkaAdminIOSpec extends SyncIntegrationSpec with EmbeddedKafka with Befor
           }
         }
 
-        task.unsafeRunSync
+        task.unsafeRunSync()
       }
     }
   }

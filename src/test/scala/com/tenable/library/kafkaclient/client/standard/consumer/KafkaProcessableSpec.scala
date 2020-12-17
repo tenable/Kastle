@@ -4,17 +4,15 @@ import java.util.{List => JList}
 
 import cats.data.StateT
 import cats.effect.IO
-import com.github.ghik.silencer.silent
 import com.tenable.library.kafkaclient.client.standard.consumer.KafkaUnitTestUtils.buildRecords
 import org.apache.kafka.clients.consumer._
 import org.apache.kafka.common.TopicPartition
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.collection.mutable.ArrayBuffer
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-@silent
 class KafkaProcessableSpec extends AnyFlatSpec with Matchers {
   case class TestRecord[K, V](consumerRecord: ConsumerRecord[K, V])
   case class TestRecordRef(topicPartitionIndex: Int, index: Int)
@@ -101,7 +99,7 @@ class KafkaProcessableSpec extends AnyFlatSpec with Matchers {
 
     //Run cofree with stateT to gather results
     val res = KafkaProcessable
-      .run[StateT[IO, ArrayBuffer[String], ?], String, String, TestRecord](batch, {
+      .run[StateT[IO, ArrayBuffer[String], *], String, String, TestRecord](batch, {
         case (g, _) =>
           StateT.apply[IO, ArrayBuffer[String], BatchContext](s =>
             IO.pure((s.+=(g.consumerRecord.value()), BatchContext.empty))
@@ -129,7 +127,7 @@ class KafkaProcessableSpec extends AnyFlatSpec with Matchers {
 
     //Run cofree with stateT to gather results
     val res = KafkaProcessable
-      .run[StateT[IO, ArrayBuffer[String], ?], String, String, TestRecord](
+      .run[StateT[IO, ArrayBuffer[String], *], String, String, TestRecord](
         batch, {
           case (g, _) =>
             StateT.apply[IO, ArrayBuffer[String], BatchContext] { s =>

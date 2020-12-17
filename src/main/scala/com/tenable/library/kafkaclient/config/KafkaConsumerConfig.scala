@@ -2,7 +2,6 @@ package com.tenable.library.kafkaclient.config
 
 import java.util.Properties
 
-import com.github.ghik.silencer.silent
 import org.apache.kafka.clients.consumer.ConsumerConfig
 
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
@@ -25,7 +24,6 @@ case class KafkaConsumerConfig(
 
   val fakePollInterval: FiniteDuration = keepAliveInterval.getOrElse(0.millis)
 
-  @silent
   def properties[K, V]: Properties = {
     val props = new Properties()
     props.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, connectionString)

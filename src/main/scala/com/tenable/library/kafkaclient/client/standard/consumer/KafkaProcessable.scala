@@ -6,7 +6,6 @@ import cats.instances.option._
 import cats.syntax.functor._
 import cats.syntax.monoid._
 import cats.{Eval, Monad, Now, ~>}
-import com.github.ghik.silencer.silent
 import com.tenable.library.kafkaclient.client.standard.consumer.units.TPBatch.TPRecords
 import com.tenable.library.kafkaclient.client.standard.consumer.units.{
   FullBatch,
@@ -16,7 +15,7 @@ import com.tenable.library.kafkaclient.client.standard.consumer.units.{
 import org.apache.kafka.clients.consumer.{ConsumerRecord, ConsumerRecords}
 import org.apache.kafka.common.TopicPartition
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 trait KafkaProcessable[G[_, _]] {
   type Ref
@@ -33,7 +32,6 @@ trait KafkaProcessable[G[_, _]] {
   def shouldFilter[K, V](g: G[K, V], ctx: BatchContext): Boolean
 }
 
-@silent
 object KafkaProcessable {
   def apply[G[_, _]](implicit KP: KafkaProcessable[G]): KafkaProcessable[G] = KP
 
@@ -62,7 +60,8 @@ object KafkaProcessable {
         Cofree.ana[Option, KP.Ref, GAndOffsets[G[K, V]]](start)(
           { ref =>
             KP.previous(crs, ref)
-          }, { ref =>
+          },
+          { ref =>
             KP.gAtRef(crs, ref)
           }
         )
@@ -77,14 +76,13 @@ object KafkaProcessable {
     val M = Sync[M]
 
     Cofree
-      .cataM[Option, M, GAndOffsets[G[K, V]], BatchContext](cofree) {
-        case ((g, offsets), acc) =>
-          acc match {
-            case Some(ctx) if KP.shouldFilter(g, ctx) => Monad[M].pure(ctx)
-            case other =>
-              val currentCtx = other.getOrElse(BatchContext.empty)
-              runG { (g, offsets) }.map(_ |+| currentCtx)
-          }
+      .cataM[Option, M, GAndOffsets[G[K, V]], BatchContext](cofree) { case ((g, offsets), acc) =>
+        acc match {
+          case Some(ctx) if KP.shouldFilter(g, ctx) => Monad[M].pure(ctx)
+          case other =>
+            val currentCtx = other.getOrElse(BatchContext.empty)
+            runG { (g, offsets) }.map(_ |+| currentCtx)
+        }
       }(new (Eval ~> M) {
         override def apply[A](fa: Eval[A]): M[A] = fa match {
           case Now(value) => M.pure(value)
