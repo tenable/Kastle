@@ -1,4 +1,3 @@
-
 import sbt.Keys._
 import sbt.internal.util.Attributed
 import sbt._
@@ -8,11 +7,11 @@ object IntegrationSettings {
 
   lazy val testAll = TaskKey[Unit]("test-all")
 
-  lazy val config : Configuration = IntegrationTest
+  lazy val config: Configuration = IntegrationTest
 
-  private [this] lazy val extraSettings =
+  private[this] lazy val extraSettings =
     inConfig(config)(Defaults.itSettings ++ Defaults.testSettings) ++ Seq(
-      javaOptions in config ++= Seq()  ++ (javaOptions in Test).value,
+      javaOptions in config ++= Seq() ++ (javaOptions in Test).value,
       fork in config := true,
       scalaSource in config := baseDirectory.value / "src" / "it" / "scala",
       concurrentRestrictions in Global += Tags.limit(Tags.Test, 1),

@@ -1,7 +1,7 @@
 package com.tenable.library.kafkaclient.client.standard.consumer.units
 
 import com.tenable.library.kafkaclient.client.standard.consumer._
-import org.apache.kafka.clients.consumer.{ConsumerRecord, ConsumerRecords}
+import org.apache.kafka.clients.consumer.{ ConsumerRecord, ConsumerRecords }
 import org.apache.kafka.common.TopicPartition
 
 import scala.collection.mutable
@@ -34,8 +34,8 @@ object SingleConsumerRecord {
     }
 
     override def gAtRef[K, V](
-        crs: ConsumerRecords[K, V],
-        ref: Ref
+      crs: ConsumerRecords[K, V],
+      ref: Ref
     ): (ConsumerRecord[K, V], Map[TopicPartition, GOffsets]) = {
       val ((tp, idx), _)   = ref
       val currentTpRecords = crs.records(tp)
@@ -44,8 +44,7 @@ object SingleConsumerRecord {
       (g, offsets)
     }
 
-    override def shouldFilter[K, V](g: ConsumerRecord[K, V], ctx: BatchContext): Boolean = {
+    override def shouldFilter[K, V](g: ConsumerRecord[K, V], ctx: BatchContext): Boolean =
       ctx.skippingPartitions(new TopicPartition(g.topic(), g.partition()))
-    }
   }
 }

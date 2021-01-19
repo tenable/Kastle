@@ -11,12 +11,11 @@ object BatchContext {
 
   implicit val monoidBC: Monoid[BatchContext] = new Monoid[BatchContext] {
     def empty: BatchContext = BatchContext(Set.empty)
-    def combine(left: BatchContext, right: BatchContext): BatchContext = {
+    def combine(left: BatchContext, right: BatchContext): BatchContext =
       if (right.skippingPartitions.isEmpty) {
         left
       } else {
         left.copy(skippingPartitions = left.skippingPartitions ++ right.skippingPartitions)
       }
-    }
   }
 }

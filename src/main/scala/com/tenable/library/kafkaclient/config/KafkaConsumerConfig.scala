@@ -4,20 +4,20 @@ import java.util.Properties
 
 import org.apache.kafka.clients.consumer.ConsumerConfig
 
-import scala.concurrent.duration.{DurationLong, FiniteDuration}
+import scala.concurrent.duration.{ DurationLong, FiniteDuration }
 
 case class KafkaConsumerConfig(
-    connectionString: String,
-    topics: Set[String],
-    groupId: String,
-    maxPollInterval: FiniteDuration,
-    keepAliveInterval: Option[FiniteDuration] = None,
-    maybeMaxPollRecords: Option[Int] = None,
-    customClientId: Option[String] = None,
-    autoCommit: Boolean = false,
-    autoOffsetReset: String = "earliest",
-    maybeSessionTimeout: Option[FiniteDuration] = None,
-    additionalConfig: Map[String, String] = Map.empty[String, String]
+  connectionString: String,
+  topics: Set[String],
+  groupId: String,
+  maxPollInterval: FiniteDuration,
+  keepAliveInterval: Option[FiniteDuration] = None,
+  maybeMaxPollRecords: Option[Int] = None,
+  customClientId: Option[String] = None,
+  autoCommit: Boolean = false,
+  autoOffsetReset: String = "earliest",
+  maybeSessionTimeout: Option[FiniteDuration] = None,
+  additionalConfig: Map[String, String] = Map.empty[String, String]
 ) {
 
   lazy val clientId: String = customClientId.getOrElse(s"$groupId-consumer")

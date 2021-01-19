@@ -12,18 +12,14 @@ inThisBuild(
     organization := "com.tenable",
     organizationName := "Tenable",
     organizationHomepage := Some(url("https://www.tenable.com/")),
-    scmInfo := Some(ScmInfo(
-      url("https://github.com/tenable/kastle"),
-      "scm:git@github.com:tenable/Kastle.git")),
+    scmInfo := Some(
+      ScmInfo(url("https://github.com/tenable/kastle"), "scm:git@github.com:tenable/Kastle.git")
+    ),
     description := "A purely functional, effectful, resource-safe, kafka library for Scala.",
     licenses := List("Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt")),
     homepage := Some(url("https://tenable.github.io/Kastle")),
     developers := List(
-      Developer(
-        id = "agbell",
-        name = "Adam Bell",
-        email = "",
-        url = url("https://github.com/tenable"))
+      Developer(id = "agbell", name = "Adam Bell", email = "", url = url("https://github.com/tenable"))
     )
   )
 )
@@ -35,6 +31,7 @@ lazy val kastle = (project in file("."))
   .settings(
     name := "kastle",
     addCompilerPlugin(kindProjector),
+    scalastyleFailOnWarning := true,
     libraryDependencies ++= Seq(
       slf4jApi,
       catsCore,
@@ -43,8 +40,8 @@ lazy val kastle = (project in file("."))
       simulacrum
     )
       ++ kafkaRelated
-      ++ commonTestDependencies.map(_  % Test)
-      ++ commonTestDependencies.map(_  % IntegrationTest)
+      ++ commonTestDependencies.map(_ % Test)
+      ++ commonTestDependencies.map(_ % IntegrationTest)
       ++ Seq(embeddedKafka).map(_ % IntegrationTest)
   )
 
@@ -98,3 +95,7 @@ lazy val site = project
     )
   }
   .dependsOn(kastle)
+
+addCommandAlias("format", ";scalafmtAll;scalafmtSbt")
+addCommandAlias("formatCheck", ";scalafmtCheckAll;scalafmtSbtCheck")
+addCommandAlias("styleCheck", ";scalastyle;test:scalastyle;it:scalastyle")

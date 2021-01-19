@@ -1,11 +1,7 @@
 package com.tenable.library.kafkaclient.client.standard.consumer.units
 
-import com.tenable.library.kafkaclient.client.standard.consumer.{
-  BatchContext,
-  GOffsets,
-  KafkaUnitTestUtils
-}
-import org.apache.kafka.clients.consumer.{ConsumerRecord, ConsumerRecords}
+import com.tenable.library.kafkaclient.client.standard.consumer.{ BatchContext, GOffsets, KafkaUnitTestUtils }
+import org.apache.kafka.clients.consumer.{ ConsumerRecord, ConsumerRecords }
 import org.apache.kafka.common.TopicPartition
 
 import scala.jdk.CollectionConverters._
@@ -57,7 +53,15 @@ class SingleConsumerRecordSpec extends AnyFlatSpec with Matchers {
     val tp2 = new TopicPartition("s", 2)
 
     List(
-      List(last.get, next1.get, next2.get, next3.get, next4.get, next5.get, next6.get) //Have to wrap the List in a List to use the oneOf
+      List(
+        last.get,
+        next1.get,
+        next2.get,
+        next3.get,
+        next4.get,
+        next5.get,
+        next6.get
+      ) //Have to wrap the List in a List to use the oneOf
         .map(_.asInstanceOf[((TopicPartition, Int), mutable.Set[TopicPartition])]._1)
     ) should contain.oneOf(
       firstEle = List((tp1, 2), (tp1, 1), (tp1, 0), (tp2, 3), (tp2, 2), (tp2, 1), (tp2, 0)),
@@ -79,37 +83,43 @@ class SingleConsumerRecordSpec extends AnyFlatSpec with Matchers {
     val tp2 = new TopicPartition("s", 2)
 
     (0 to 2).toList.map { idx =>
-      val el = SingleConsumerRecord.kafkaProcessable.gAtRef(
-        crs,
-        ((tp1, idx), mutable.Set.empty).asInstanceOf[SingleConsumerRecord.kafkaProcessable.Ref]
-      )
+      val el = SingleConsumerRecord
+        .kafkaProcessable
+        .gAtRef(
+          crs,
+          ((tp1, idx), mutable.Set.empty).asInstanceOf[SingleConsumerRecord.kafkaProcessable.Ref]
+        )
       (el._1.value(), el._2)
-    } shouldBe List("a", "b", "c").zipWithIndex.map {
-      case (el, idx) => (el, Map(tp1 -> GOffsets(idx + 1L, idx.toLong)))
+    } shouldBe List("a", "b", "c").zipWithIndex.map { case (el, idx) =>
+      (el, Map(tp1 -> GOffsets(idx + 1L, idx.toLong)))
     }
 
     (0 to 3).toList.map { idx =>
-      val el = SingleConsumerRecord.kafkaProcessable.gAtRef(
-        crs,
-        ((tp2, idx), mutable.Set.empty).asInstanceOf[SingleConsumerRecord.kafkaProcessable.Ref]
-      )
+      val el = SingleConsumerRecord
+        .kafkaProcessable
+        .gAtRef(
+          crs,
+          ((tp2, idx), mutable.Set.empty).asInstanceOf[SingleConsumerRecord.kafkaProcessable.Ref]
+        )
       (el._1.value(), el._2)
-    } shouldBe List("1", "2", "3", "4").zipWithIndex.map {
-      case (el, idx) => (el, Map(tp2 -> GOffsets(idx + 1L, idx.toLong)))
+    } shouldBe List("1", "2", "3", "4").zipWithIndex.map { case (el, idx) =>
+      (el, Map(tp2 -> GOffsets(idx + 1L, idx.toLong)))
     }
 
   }
 
   "SingleConsumerRecord.shouldFilter" should "return true if TP is in the skipping partitions in context" in {
     val expectedTp = new TopicPartition("r", 3)
-    val res = SingleConsumerRecord.kafkaProcessable
+    val res = SingleConsumerRecord
+      .kafkaProcessable
       .shouldFilter(new ConsumerRecord("r", 3, 30, "a", "a"), BatchContext(Set(expectedTp)))
     res shouldBe true
   }
 
   it should "return false if tp is not in the skipping partition in context" in {
     val otherTp = new TopicPartition("r", 4)
-    val res = SingleConsumerRecord.kafkaProcessable
+    val res = SingleConsumerRecord
+      .kafkaProcessable
       .shouldFilter(new ConsumerRecord("r", 3, 30, "a", "a"), BatchContext(Set(otherTp)))
     res shouldBe false
   }

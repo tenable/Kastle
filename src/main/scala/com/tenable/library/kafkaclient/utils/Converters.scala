@@ -1,7 +1,7 @@
 package com.tenable.library.kafkaclient.utils
 
-import java.time.{Duration => JDuration}
-import java.util.concurrent.{Future => JFuture}
+import java.time.{ Duration => JDuration }
+import java.util.concurrent.{ Future => JFuture }
 
 import cats.syntax.functor._
 import cats.syntax.applicativeError._
