@@ -7,8 +7,7 @@ lazy val commonTestDependencies = Seq(
 
 inThisBuild(
   List(
-    scalaVersion := "2.13.3",
-    crossScalaVersions := Seq("2.12.12", "2.13.3"),
+    scalaVersion := "2.13.4",
     organization := "com.tenable",
     organizationName := "Tenable",
     organizationHomepage := Some(url("https://www.tenable.com/")),
