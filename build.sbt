@@ -7,8 +7,7 @@ lazy val commonTestDependencies = Seq(
 
 inThisBuild(
   List(
-    scalaVersion := "2.13.3",
-    crossScalaVersions := Seq("2.12.12", "2.13.3"),
+    scalaVersion := "2.13.4",
     organization := "com.tenable",
     organizationName := "Tenable",
     organizationHomepage := Some(url("https://www.tenable.com/")),
@@ -79,7 +78,7 @@ lazy val site = project
       micrositeGithubRepo := "Kastle",
       micrositeFooterText := Some("Copyright Tenable, Inc 2020"),
       micrositeHighlightTheme := "atom-one-light",
-      micrositeCompilingDocsTool := WithMdoc,
+      // micrositeCompilingDocsTool := WithMdoc,
       fork in mdoc := true, // ?????
       // sourceDirectory in Compile := baseDirectory.value / "src",
       // sourceDirectory in Test := baseDirectory.value / "test",
