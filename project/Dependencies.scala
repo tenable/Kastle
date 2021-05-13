@@ -30,6 +30,6 @@ object Dependencies {
   lazy val logbackClassic    = "ch.qos.logback" % "logback-classic" % logbackVersion
   lazy val logbackRelated    = Seq(logbackClass, logbackClassic)
 
-  lazy val kindProjector = "org.typelevel" %% "kind-projector" % "0.11.3" cross CrossVersion.full
+  lazy val kindProjector = "org.typelevel" %% "kind-projector" % "0.12.0" cross CrossVersion.full
 
 }
