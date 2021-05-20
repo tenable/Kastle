@@ -22,14 +22,14 @@ object Dependencies {
 
   lazy val simulacrum = "org.typelevel" %% "simulacrum" % "1.0.1"
 
-  lazy val scalaTest   = "org.scalatest" %% "scalatest"    % "3.2.3"
-  lazy val mockitoCore = "org.mockito"    % "mockito-core" % "3.7.7"
+  lazy val scalaTest   = "org.scalatest" %% "scalatest"    % "3.2.7"
+  lazy val mockitoCore = "org.mockito"    % "mockito-core" % "3.10.0"
 
   private val logbackVersion = "1.2.3"
   lazy val logbackClass      = "ch.qos.logback" % "logback-core"    % logbackVersion
   lazy val logbackClassic    = "ch.qos.logback" % "logback-classic" % logbackVersion
   lazy val logbackRelated    = Seq(logbackClass, logbackClassic)
 
-  lazy val kindProjector = "org.typelevel" %% "kind-projector" % "0.11.3" cross CrossVersion.full
+  lazy val kindProjector = "org.typelevel" %% "kind-projector" % "0.13.0" cross CrossVersion.full
 
 }
