@@ -22,7 +22,7 @@ object Dependencies {
 
   lazy val simulacrum = "org.typelevel" %% "simulacrum" % "1.0.1"
 
-  lazy val scalaTest   = "org.scalatest" %% "scalatest"    % "3.2.7"
+  lazy val scalaTest   = "org.scalatest" %% "scalatest"    % "3.2.9"
   lazy val mockitoCore = "org.mockito"    % "mockito-core" % "3.11.0"
 
   private val logbackVersion = "1.2.3"
