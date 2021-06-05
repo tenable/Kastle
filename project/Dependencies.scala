@@ -3,7 +3,7 @@ import sbt._
 object Dependencies {
 
   lazy val catsVersion       = "2.3.1"
-  lazy val catsEffectVersion = "2.3.1"
+  lazy val catsEffectVersion = "2.3.3"
   lazy val kafkaVersion      = "2.7.0"
 
   lazy val slf4jApi = "org.slf4j" % "slf4j-api" % "1.7.30" exclude ("org.slf4j", "slf4j-log4j12")
@@ -23,13 +23,13 @@ object Dependencies {
   lazy val simulacrum = "org.typelevel" %% "simulacrum" % "1.0.1"
 
   lazy val scalaTest   = "org.scalatest" %% "scalatest"    % "3.2.7"
-  lazy val mockitoCore = "org.mockito"    % "mockito-core" % "3.9.0"
+  lazy val mockitoCore = "org.mockito"    % "mockito-core" % "3.10.0"
 
   private val logbackVersion = "1.2.3"
   lazy val logbackClass      = "ch.qos.logback" % "logback-core"    % logbackVersion
   lazy val logbackClassic    = "ch.qos.logback" % "logback-classic" % logbackVersion
   lazy val logbackRelated    = Seq(logbackClass, logbackClassic)
 
-  lazy val kindProjector = "org.typelevel" %% "kind-projector" % "0.11.3" cross CrossVersion.full
+  lazy val kindProjector = "org.typelevel" %% "kind-projector" % "0.13.0" cross CrossVersion.full
 
 }
