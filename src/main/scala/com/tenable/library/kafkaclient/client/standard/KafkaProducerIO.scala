@@ -11,7 +11,6 @@ import org.apache.kafka.common.serialization.Serializer
 import com.tenable.library.kafkaclient.utils.Converters.JavaFutureOps
 
 import scala.concurrent.ExecutionContext
-import cats.effect.ContextShift
 import cats.effect.Resource
 import org.apache.kafka.common.PartitionInfo
 
@@ -291,7 +290,7 @@ object KafkaProducerIO {
       value: V,
       decorate: ProducerRecord[K, V] => ProducerRecord[K, V]
     ): F[RecordMetadata] =
-      F.async[RecordMetadata] { cb =>
+      F.async_[RecordMetadata] { cb =>
         producer.send(
           decorate(producerRecord(outputTopic, key, value)),
           (metadata: RecordMetadata, exception: Exception) =>

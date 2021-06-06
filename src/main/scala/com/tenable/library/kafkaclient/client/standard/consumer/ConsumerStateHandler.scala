@@ -3,7 +3,7 @@ package com.tenable.library.kafkaclient.client.standard.consumer
 import java.time.Instant
 
 import cats.effect.concurrent.MVar2
-import cats.effect.{ CancelToken, ConcurrentEffect, ContextShift, Timer }
+import cats.effect.{ CancelToken, ConcurrentEffect }
 import cats.syntax.applicativeError._
 import cats.syntax.apply._
 import cats.syntax.flatMap._
@@ -17,8 +17,9 @@ import scala.jdk.CollectionConverters._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.{ Duration, FiniteDuration }
 import scala.util.control.NonFatal
+import cats.effect.Temporal
 
-private[standard] class ConsumerStateHandler[F[_]: ConcurrentEffect: ContextShift: Timer, K, V](
+private[standard] class ConsumerStateHandler[F[_]: ConcurrentEffect: ContextShift: Temporal, K, V](
   val clientId: String,
   keepAliveInterval: FiniteDuration,
   builder: () => Consumer[K, V],
@@ -27,7 +28,7 @@ private[standard] class ConsumerStateHandler[F[_]: ConcurrentEffect: ContextShif
 )(implicit logger: Logger) {
   private val F  = ConcurrentEffect[F]
   private val CS = ContextShift[F]
-  private val T  = Timer[F]
+  private val T  = Temporal[F]
 
   def withConsumer[R](action: String, debugMsg: Option[String] = None)(
     fConsumer: State[F, K, V] => F[(State[F, K, V], R)]
