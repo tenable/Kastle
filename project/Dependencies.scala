@@ -6,7 +6,7 @@ object Dependencies {
   lazy val catsEffectVersion = "2.5.1"
   lazy val kafkaVersion      = "2.7.0"
 
-  lazy val slf4jApi = "org.slf4j" % "slf4j-api" % "1.7.30" exclude ("org.slf4j", "slf4j-log4j12")
+  lazy val slf4jApi = "org.slf4j" % "slf4j-api" % "1.7.31" exclude ("org.slf4j", "slf4j-log4j12")
 
   // Javax excluded and added specifially to avoid https://github.com/sbt/sbt/issues/3618
   // included explicitly to let us deal with vulns
