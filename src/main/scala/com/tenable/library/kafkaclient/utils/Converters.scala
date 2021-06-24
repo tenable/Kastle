@@ -17,7 +17,7 @@ object Converters {
 
   def liftJavaFuture[F[_]: Async, R](future: JFuture[R]): F[R] = {
     val F = Async[F]
-    F.async[R] { cb =>
+    F.async_[R] { cb =>
       F.delay(future.get)
         .map(r => cb(Right(r)))
         .recover { case e => cb(Left(e)) }

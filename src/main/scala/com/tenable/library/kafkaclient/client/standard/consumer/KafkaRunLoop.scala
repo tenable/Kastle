@@ -17,10 +17,11 @@ import org.slf4j.{ Logger, LoggerFactory }
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.duration.FiniteDuration
 import scala.util.Try
+import cats.effect.Temporal
 
 class KafkaRunLoop[F[_]: ConcurrentEffect, K, V] private (
   consumer: KafkaConsumerIO[F, K, V]
-)(implicit T: Timer[F]) { self =>
+)(implicit T: Temporal[F]) { self =>
   private val F: ConcurrentEffect[F] = ConcurrentEffect[F]
   private val logger: Logger =
     LoggerFactory.getLogger(s"kafka-run-loop-${consumer.clientId}".replace('.', '-'))
@@ -67,7 +68,7 @@ object KafkaRunLoop {
 
   class Builder[
     T <: BuilderState,
-    F[_]: ConcurrentEffect: Timer,
+    F[_]: ConcurrentEffect: Temporal,
     K,
     V,
     G[_, _],
@@ -142,7 +143,7 @@ object KafkaRunLoop {
     }
   }
 
-  def builder[F[_]: ConcurrentEffect: Timer, K, V](
+  def builder[F[_]: ConcurrentEffect: Temporal, K, V](
     consumer: KafkaConsumerIO[F, K, V]
   ): Builder[CreatedEmpty, F, K, V, Nothing, Nothing] =
     new Builder[CreatedEmpty, F, K, V, Nothing, Nothing](consumer, None, None)

@@ -27,6 +27,7 @@ import com.tenable.library.kafkaclient.config.KafkaConsumerConfig
 import org.apache.kafka.clients.consumer.internals.NoOpConsumerRebalanceListener
 
 import scala.annotation.nowarn
+import cats.effect.Temporal
 
 trait KafkaConsumerIO[F[_], K, V] {
   val clientId: String
@@ -68,7 +69,7 @@ object KafkaConsumerIO {
 
   class Builder[
     T <: BuilderState,
-    F[_]: ConcurrentEffect: ContextShift: Timer,
+    F[_]: ConcurrentEffect: ContextShift: Temporal,
     K,
     V
   ] private[KafkaConsumerIO] (
@@ -133,12 +134,12 @@ object KafkaConsumerIO {
     }
   }
 
-  def builder[F[_]: ConcurrentEffect: ContextShift: Timer, K, V](
+  def builder[F[_]: ConcurrentEffect: ContextShift: Temporal, K, V](
     config: KafkaConsumerConfig
   ): Builder[CreatedEmpty, F, K, V] =
     new Builder[CreatedEmpty, F, K, V](config, None, None, None)
 
-  private def resource[F[_]: ConcurrentEffect: ContextShift: Timer, K, V](
+  private def resource[F[_]: ConcurrentEffect: ContextShift: Temporal, K, V](
     config: KafkaConsumerConfig,
     keyDeserializer: Deserializer[K],
     valueDeserializer: Deserializer[V],
@@ -160,7 +161,7 @@ object KafkaConsumerIO {
       )
     } yield consumer
 
-  private def create[F[_]: ConcurrentEffect: ContextShift: Timer, K, V](
+  private def create[F[_]: ConcurrentEffect: ContextShift: Temporal, K, V](
     config: KafkaConsumerConfig,
     keyDeserializer: Deserializer[K],
     valueDeserializer: Deserializer[V],
@@ -199,7 +200,7 @@ object KafkaConsumerIO {
   }
 
   // scalastyle:off method.length
-  private def apply[F[_]: ConcurrentEffect: Timer, K, V](
+  private def apply[F[_]: ConcurrentEffect: Temporal, K, V](
     stateHandler: ConsumerStateHandler[F, K, V]
   )(implicit logger: Logger): KafkaConsumerIO[F, K, V] = new KafkaConsumerIO[F, K, V] {
     private val F = ConcurrentEffect[F]
